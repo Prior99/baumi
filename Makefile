@@ -26,6 +26,7 @@ assets:
 	aseprite -b ase/background.ase --save-as assets/background.png --data /dev/null
 	aseprite -b ase/cloud.ase --save-as assets/cloud.png --data /dev/null
 	aseprite -b ase/missing-texture.ase --save-as assets/missing-texture.png --data /dev/null
+	aseprite -b ase/branch.ase --save-as assets/branch.png --data /dev/null
 
 @PHONEY: clean
 clean:

@@ -20,9 +20,7 @@ class Clouds : IteratingSystem(
     override fun processEntity(entity: Entity, delta: Float) {
         val position = cPosition.get(entity).position
         position.x -= cloudSpeed * delta
-        info { "Cloud at ${position.x}/${position.y}" }
         if (position.x + textureCloud.width < 0) {
-            info { "Cloud will be killed." }
             engine.removeEntity(entity)
         }
     }
