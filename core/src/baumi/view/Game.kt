@@ -11,7 +11,8 @@ import ktx.ashley.*
 import ktx.app.KtxScreen
 import ktx.scene2d.*
 import ktx.math.*
-import baumi.system.SimpleRenderer
+import baumi.system.*
+import baumi.component.*
 
 class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val textureBackground = Texture("background.png")
@@ -25,11 +26,20 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
 
     override fun show() {
         stage.addActor(view)
+        engine.entity {
+            with<Position> { position = vec2(30f, 30f) }
+            with<SimpleDrawable> { texture = textureCloud; size = vec2(70f, 35f) }
+            with<ZIndex> { z = -1000 }
+        }
+        engine.addSystem(SimpleRenderer(batch))
     }
 
     override fun render(delta: Float) {
         stage.act(delta)
         stage.draw()
+        batch.begin()
+        engine.update(delta)
+        batch.end()
     }
 
     override fun hide() {
