@@ -1,18 +1,43 @@
-image: "cangol/android-gradle"
-
-before_script:
-  - apt-get update && apt-get -yy install make
-  - echo y | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-23"
+assets:
+  image: "debian:stretch"
+  before_script:
+    - apt-get -qq -y update
+    - apt-get -qq -y install aseprite make xvfb
+  script:
+    - xvfb-run make assets
+  stage: build
+  artifacts:
+    paths:
+      - assets
 
 stages:
   - build
 
 android:
+  image: "cangol/android-gradle"
+  before_script:
+    - apt-get update && apt-get -yy install make
+    - echo y | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-23"
   script:
     - make build-android
+    - mv android/build/outputs/apk/*.apk .
   stage: build
+  artifacts:
+    paths:
+      - *.apk
+  dependencies:
+    - assets
 
 desktop:
+  image: "cangol/android-gradle"
+  before_script:
+    - apt-get update && apt-get -yy install make
   script:
     - make build-desktop
+    - mv desktop/build/libs/*.jar .
   stage: build
+  artifacts:
+    paths:
+      - *.jar
+  dependencies:
+    - assets
