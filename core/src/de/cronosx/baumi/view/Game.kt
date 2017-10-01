@@ -1,4 +1,4 @@
-package de.cronosx.baumi.screen
+package de.cronosx.baumi.view
 
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.graphics.g2d.Batch
