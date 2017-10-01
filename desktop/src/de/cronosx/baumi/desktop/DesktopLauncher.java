@@ -1,8 +1,8 @@
-package de.cronosx.baumi.desktop;
+package baumi.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import de.cronosx.baumi.Application;
+import baumi.Application;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {

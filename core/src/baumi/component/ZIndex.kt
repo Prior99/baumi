@@ -1,4 +1,4 @@
-package de.cronosx.baumi.component
+package baumi.component
 
 import com.badlogic.ashley.core.Component
 import ktx.ashley.*

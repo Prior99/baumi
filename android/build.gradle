@@ -18,7 +18,7 @@ android {
         exclude 'META-INF/robovm/ios/robovm.xml'
     }
     defaultConfig {
-        applicationId "de.cronosx.baumi"
+        applicationId "baumi"
         minSdkVersion 9
         targetSdkVersion 23
         versionCode 1
@@ -79,7 +79,7 @@ task run(type: Exec) {
     }
 
     def adb = path + "/platform-tools/adb"
-    commandLine "$adb", 'shell', 'am', 'start', '-n', 'de.cronosx.baumi/de.cronosx.baumi.AndroidLauncher'
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'baumi/baumi.AndroidLauncher'
 }
 
 // sets up the Android Eclipse project, using the old Ant based build.

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="de.cronosx.baumi" >
+    package="baumi" >
 
     <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="23" />
 
@@ -10,7 +10,7 @@
         android:label="@string/app_name"
         android:theme="@style/GdxTheme" >
         <activity
-            android:name="de.cronosx.baumi.AndroidLauncher"
+            android:name="baumi.AndroidLauncher"
             android:label="@string/app_name" 
             android:screenOrientation="landscape"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize">

@@ -1,4 +1,4 @@
-package de.cronosx.baumi
+package baumi
 
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.g2d.Batch
@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.viewport.Viewport
 import ktx.app.KtxGame
 import ktx.inject.Context
 import ktx.async.enableKtxCoroutines
-import de.cronosx.baumi.view.Game
+import baumi.view.Game
 
 class Application : KtxGame<Screen>() {
     val context = Context()
