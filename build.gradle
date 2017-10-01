@@ -1,5 +1,8 @@
 buildscript {
-    ext.kotlinVersion = '1.1.1'
+    ext {
+        kotlinVersion = '1.1.1'
+        artemisVersion = '2.1.0'
+    }
 
     repositories {
         mavenLocal()
@@ -10,7 +13,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-
+        classpath "net.onedaybeard.artemis:artemis-odb-gradle-plugin:$artemisVersion"
     }
 }
 
@@ -24,7 +27,6 @@ allprojects {
         gdxVersion = '1.9.6'
         roboVMVersion = '2.3.1'
         box2DLightsVersion = '1.4'
-        ashleyVersion = '1.7.0'
         aiVersion = '1.8.0'
         ktxLogVersion = '1.9.6-b7'
         ktxScene2DVersion = '1.9.6-b7'
@@ -59,6 +61,7 @@ project(":desktop") {
         compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
         compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     }
 }
 
@@ -88,21 +91,20 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64"
-        compile "com.badlogicgames.ashley:ashley:$ashleyVersion"
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     }
 }
 
 project(":core") {
     apply plugin: "kotlin"
 
-
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-        compile "com.badlogicgames.ashley:ashley:$ashleyVersion"
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
         compile "io.github.libktx:ktx-log:$ktxLogVersion"
         compile "io.github.libktx:ktx-scene2d:$ktxScene2DVersion"
         compile "io.github.libktx:ktx-async:$ktxAsyncVersion"
@@ -115,6 +117,7 @@ project(":core") {
         compile "io.github.libktx:ktx-actors:$ktxActorsVersion"
         compile "io.github.libktx:ktx-collections:$ktxCollectionsVersion"
         compile "io.github.libktx:ktx-style:$ktxStyleVersion"
+        compile "net.onedaybeard.artemis:artemis-odb:$artemisVersion"
     }
 }
 

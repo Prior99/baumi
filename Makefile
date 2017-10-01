@@ -25,3 +25,8 @@ assets:
 	mkdir -p assets
 	aseprite -b ase/background.ase --save-as assets/background.png --data /dev/null
 	aseprite -b ase/cloud.ase --save-as assets/cloud.png --data /dev/null
+
+@PHONEY: clean
+clean:
+	./gradlew clean
+	rm -rf assets
