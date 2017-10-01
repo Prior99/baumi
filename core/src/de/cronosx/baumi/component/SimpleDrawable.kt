@@ -7,6 +7,5 @@ import ktx.math.*
 import ktx.ashley.*
 
 class SimpleDrawable(
-        var texture: Texture = Texture("missing-texture.png"),
-        var size: Vector2 = vec2(0f, 0f)
+        var texture: Texture = Texture("missing-texture.png")
 ) : Component

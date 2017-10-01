@@ -16,7 +16,7 @@ class SimpleRenderer(var batch: Batch) : SortedIteratingSystem(
     override fun processEntity(entityId: Entity, delta: Float) {
         val position = cPosition.get(entityId).position
         val drawable = cSimpleDrawable.get(entityId)
-        batch.draw(drawable.texture, position.x, position.y, drawable.size.x, drawable.size.y)
+        batch.draw(drawable.texture, position.x, position.y)
     }
 
     class ZComparator : Comparator<Entity> {
