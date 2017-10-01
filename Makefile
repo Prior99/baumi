@@ -1,21 +1,21 @@
 default: all
 
-all: android desktop
+all: build-android build-desktop
 
 run: run-desktop
 
 @PHONY: run-android
 run-android:
-	./gradlew android:installDebug android:run:
+	./gradlew android:installDebug android:run
 
 @PHONY: run-desktop
 run-desktop:
 	./gradlew desktop:run
 
-@PHONY: android
-android:
+@PHONY: build-android
+build-android:
 	./gradlew android:assembleRelease
 
-@PHONY: desktop
-desktop:
+@PHONY: build-desktop
+build-desktop:
 	./gradlew desktop:dist
