@@ -1,7 +1,8 @@
 package de.cronosx.baumi.component
 
-import com.artemis.Component
+import com.badlogic.ashley.core.Component
+import ktx.ashley.*
 
-class ZIndex : Component() {
+class ZIndex : Component {
     val z: Int = 0
 }

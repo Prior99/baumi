@@ -5,8 +5,9 @@ import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
-import com.artemis.WorldConfigurationBuilder
-import com.artemis.World
+import com.badlogic.ashley.core.Component
+import com.badlogic.ashley.core.PooledEngine
+import ktx.ashley.*
 import ktx.app.KtxScreen
 import ktx.scene2d.*
 import ktx.math.*
@@ -20,18 +21,13 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         background = TextureRegionDrawable(TextureRegion(textureBackground, 0, 0, 135, 240))
         pack()
     }
-    val world = World(WorldConfigurationBuilder().with(
-            SimpleRenderer(batch)
-        ).build()
-    );
+    val engine = PooledEngine()
 
     override fun show() {
         stage.addActor(view)
     }
 
     override fun render(delta: Float) {
-        world.setDelta(delta)
-        world.process()
         stage.act(delta)
         stage.draw()
     }

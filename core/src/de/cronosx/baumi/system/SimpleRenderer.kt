@@ -1,31 +1,31 @@
 package de.cronosx.baumi.system
 
 import de.cronosx.baumi.component.*
-import de.cronosx.baumi.util.*
-import com.artemis.Aspect
-import com.artemis.annotations.Wire
-import com.artemis.systems.IteratingSystem
 import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.ashley.core.Component
+import com.badlogic.ashley.systems.SortedIteratingSystem
+import com.badlogic.ashley.core.Family.Builder
+import com.badlogic.ashley.core.Entity
+import ktx.ashley.*
 
-@Wire(failOnNull = false)
-class SimpleRenderer(var batch: Batch) : IteratingSystem(
-        allOf(SimpleDrawable::class, Position::class, ZIndex::class)) {
-    val cSimpleDrawable by require<SimpleDrawable>()
-    val cPosition by require<Position>()
-    val cZ by require<ZIndex>()
+class SimpleRenderer(var batch: Batch) : SortedIteratingSystem(
+        allOf(SimpleDrawable::class, Position::class, ZIndex::class).get(), ZComparator()) {
+    val cSimpleDrawable = mapperFor<SimpleDrawable>()
+    val cPosition = mapperFor<Position>()
 
-    override fun begin() {
-        batch.begin()
-    }
-
-    override fun process(entityId: Int) {
+    override fun processEntity(entityId: Entity, delta: Float) {
         val position = cPosition.get(entityId).position
         val drawable = cSimpleDrawable.get(entityId)
-        val z = cZ.get(entityId)
+        batch.begin()
         batch.draw(drawable.texture, position.x, position.y, drawable.size.x, drawable.size.y)
+        batch.end()
     }
 
-    override fun end() {
-        batch.end()
+    class ZComparator : Comparator<Entity> {
+        val cZ = mapperFor<ZIndex>()
+
+        override fun compare(e1: Entity, e2: Entity): Int {
+            return cZ.get(e1).z - cZ.get(e2).z;
+        }
     }
 }
