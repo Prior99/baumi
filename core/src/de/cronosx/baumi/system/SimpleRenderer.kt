@@ -1,6 +1,6 @@
-package baumi.system
+package de.cronosx.baumi.system
 
-import baumi.component.*
+import de.cronosx.baumi.component.*
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.ashley.core.Component
 import com.badlogic.ashley.systems.SortedIteratingSystem

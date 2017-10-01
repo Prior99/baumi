@@ -1,4 +1,4 @@
-package baumi.view
+package de.cronosx.baumi.view
 
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.graphics.g2d.Batch
@@ -11,8 +11,8 @@ import ktx.ashley.*
 import ktx.app.KtxScreen
 import ktx.scene2d.*
 import ktx.math.*
-import baumi.system.*
-import baumi.component.*
+import de.cronosx.baumi.system.*
+import de.cronosx.baumi.component.*
 
 class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val textureBackground = Texture("background.png")

@@ -1,10 +1,10 @@
-package baumi;
+package de.cronosx.baumi;
 
 import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import baumi.Application;
+import de.cronosx.baumi.Application;
 
 public class AndroidLauncher extends AndroidApplication {
 	@Override
