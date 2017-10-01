@@ -1,0 +1,18 @@
+image: "cangol/android-gradle"
+
+before_script:
+  - apt-get update && apt-get -yy install make
+  - echo y | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-23"
+
+stages:
+  - build
+
+android:
+  script:
+    - make build-android
+  stage: build
+
+desktop:
+  script:
+    - make build-desktop
+  stage: build
