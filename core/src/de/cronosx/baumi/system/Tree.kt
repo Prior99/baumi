@@ -16,6 +16,7 @@ class Tree(
         val dna: DNA = defaultDna
 ) : EntitySystem() {
     var maxGeneration = 0
+    var leafProbability = 0.001f
 
     val cBranch = mapperFor<Branch>()
     val cPosition = mapperFor<Position>()
@@ -36,25 +37,50 @@ class Tree(
         onNewGeneration()
         onNewGeneration()
         onNewGeneration()
+        onNewGeneration()
     }
 
-    fun createBranch(pos: Vector2, rot: Float, parentBranchLength: Float): Entity {
+    fun createBranch(newPosition: Vector2, newRotation: Float, parentBranchLength: Float): Entity {
+        val newLength = parentBranchLength * dna.perGenerationBranchLengthFactor
+        val dir = getDirectionVectorAlongBranch(newLength, newRotation)
+        val newChildren: MutableList<Entity> = ArrayList()
+        val newGeneration = maxGeneration + 1
+        var leftRight = 1.0f
+        var i = 0f
+        while (i < 1f) {
+            if (Math.random() < leafProbability) {
+                newChildren.add(engine.entity {
+                    with<Position> { position = dir.cpy().scl(i).add(newPosition) }
+                    with<Leaf> {
+                        generation = newGeneration + 1
+                        rotation = newRotation + newRotation * Math.PI.toFloat() / 8f
+                    }
+                })
+            }
+            leftRight *= -1f
+            i += 0.1f
+        }
         return engine.entity {
-            with<Position>{ position = pos }
+            with<Position>{ position = newPosition }
             with<Branch>{
-                generation = maxGeneration + 1
-                children = ArrayList()
-                length = parentBranchLength * dna.perGenerationBranchLengthFactor
-                rotation = rot
+                generation = newGeneration
+                children = newChildren
+                length = newLength
+                rotation = newRotation
             }
         }
     }
 
-    fun getChildPosition(parentPos: Position, parentBranch: Branch): Vector2 {
-        val xShift = parentBranch.length * Math.cos(parentBranch.rotation.toDouble())
-        val yShift = parentBranch.length * Math.sin(parentBranch.rotation.toDouble())
+    fun getDirectionVectorAlongBranch(length: Float, rotation: Float): Vector2 {
+        return vec2(
+            length * Math.cos(rotation.toDouble()).toFloat(),
+            length * Math.sin(rotation.toDouble()).toFloat()
+        )
+    }
 
-        return parentPos.position.cpy().add(vec2(xShift.toFloat(), yShift.toFloat()))
+    fun getChildPosition(parentPos: Position, parentBranch: Branch): Vector2 {
+        val dir = getDirectionVectorAlongBranch(parentBranch.length, parentBranch.rotation)
+        return parentPos.position.cpy().add(dir)
     }
 
     fun onNewGeneration() {
@@ -84,5 +110,6 @@ class Tree(
             parentBranch.children.add(right)
         }
         maxGeneration++
+        leafProbability *= 10f;
     }
 }
