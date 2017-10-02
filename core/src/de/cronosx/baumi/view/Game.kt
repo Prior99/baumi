@@ -22,7 +22,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
 
     override fun show() {
         engine.addSystem(SimpleRenderer(batch))
-        engine.addSystem(Clouds())
+        engine.addSystem(Clouds(batch))
         engine.addSystem(Tree(defaultDna))
         engine.addSystem(BranchRenderer(batch))
     }

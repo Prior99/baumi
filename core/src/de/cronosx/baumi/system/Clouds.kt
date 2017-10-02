@@ -1,25 +1,29 @@
 package de.cronosx.baumi.system
 
 import de.cronosx.baumi.component.*
+import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import de.cronosx.baumi.appHeight
 import de.cronosx.baumi.appWidth
 import ktx.ashley.*
 import ktx.math.*
 import ktx.log.*
 
-class Clouds : IteratingSystem(
+class Clouds(var batch: Batch) : IteratingSystem(
         allOf(Cloud::class, Position::class).get()) {
     val cCloud = mapperFor<Cloud>()
     val cPosition = mapperFor<Position>()
-    val textureCloud = Texture("cloud.png")
-    val cloudSpeed = 30f
+    val textureCloud = Texture("clouds.png")
 
     override fun processEntity(entity: Entity, delta: Float) {
         val position = cPosition.get(entity).position
-        position.x -= cloudSpeed * delta
+        val cloud = cCloud.get(entity)
+        position.x -= cloud.speed * delta
+        val region = TextureRegion(textureCloud, 0, 12 * cloud.index, 120, 12)
+        batch.draw(region, position.x, position.y)
         if (position.x + textureCloud.width < 0) {
             engine.removeEntity(entity)
         }
@@ -34,12 +38,13 @@ class Clouds : IteratingSystem(
                 with<Position> {
                     position = vec2(
                         appWidth + Math.random().toFloat() * textureCloud.width,
-                        appHeight - textureCloud.height - Math.random().toFloat() * textureCloud.height
+                        appHeight - 10 - Math.random().toFloat() * textureCloud.height
                     )
                 }
-                with<SimpleDrawable> { texture = textureCloud }
-                with<ZIndex> { z = -1000 }
-                with<Cloud> {}
+                with<Cloud> {
+                    index = Math.floor(Math.random() * 3f).toInt()
+                    speed = Math.random().toFloat() * 20f + 10f
+                }
             }}
         }
     }
