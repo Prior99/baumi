@@ -83,7 +83,7 @@ class Tree() : EntitySystem() {
         }
     }
 
-    fun growNewBranches(entity: Entity, delta: Float): Boolean {
+    fun growNewBranches(entity: Entity, delta: Float) {
         val branch = branches.get(entity)
         val childBranches = branch.children.filter{ branches.has(it) }
         val childBranchCount = childBranches.count()
@@ -95,37 +95,33 @@ class Tree() : EntitySystem() {
         // ... the branch isn't above the maximum generation
             branch.generation < branch.dna.maxGeneration
         if (!canGrow) {
-            return false
+            return
         }
         createNextGeneration(entity)
-        return true
     }
 
-    fun growLength(entity: Entity, delta: Float): Boolean {
+    fun growLength(entity: Entity, delta: Float) {
         val branch = branches.get(entity)
         if (branch.length > branch.maxLength) {
-            return false
+            return
         }
         branch.length += delta * branch.dna.growthSpeed * branch.maxLength
         val branchPosition = positions.get(entity).position
         adjust(entity, branchPosition)
-        return true
     }
 
-    fun lifeChildren(entity: Entity, delta: Float): Boolean {
+    fun lifeChildren(entity: Entity, delta: Float) {
         val branch = branches.get(entity)
-        var result = false
         for (child in branch.children) {
-            result = life(child, delta) || result
+            life(child, delta)
         }
-        return result
     }
 
-    fun growLeafs(entity: Entity, delta: Float): Boolean {
+    fun growLeafs(entity: Entity, delta: Float) {
         val branch = branches.get(entity)
         val leafCount = branch.children.filter{ leafs.has(it) }.count()
         if (leafCount > branch.getMaxLeafs()) {
-            return false
+            return
         }
         val branchPosition = positions.get(entity).position
         val randomPositionAlongBranch = Math.random().toFloat()
@@ -142,21 +138,16 @@ class Tree() : EntitySystem() {
                 positionAlongBranch = randomPositionAlongBranch
             }
         })
-        return true
     }
 
-    fun life(entity: Entity, delta: Float): Boolean {
+    fun life(entity: Entity, delta: Float) {
         if (!branches.has(entity) || !positions.has(entity)) {
-            return false
+            return
         }
-        val newBranches = growNewBranches(entity, delta)
-        val hasGrown = growLength(entity, delta)
-        val newLeafs = growLeafs(entity, delta)
-        val childrenHaveChanged = lifeChildren(entity, delta)
-        return newBranches ||
-            hasGrown ||
-            newLeafs ||
-            childrenHaveChanged
+        growNewBranches(entity, delta)
+        growLength(entity, delta)
+        growLeafs(entity, delta)
+        lifeChildren(entity, delta)
     }
 
     fun adjust(entity: Entity, newPos: Vector2) {
