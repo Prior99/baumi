@@ -17,7 +17,7 @@ class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
         allOf(Branch::class, Position::class).get(), ZComparator()) {
     val cBranch = mapperFor<Branch>()
     val cPosition = mapperFor<Position>()
-    val branchTexture = Texture("branch.png")
+    val branchTexture = Texture("dark-wood.png")
 
     override fun processEntity(entity: Entity, delta: Float) {
         val position = cPosition.get(entity).position

@@ -17,7 +17,7 @@ class Tree : EntitySystem() {
 
     override fun addedToEngine(engine: Engine) {
         engine.entity{
-            with<Position>{ position = vec2(appWidth/ 2f, 20f) }
+            with<Position>{ position = vec2(appWidth/ 2f, 13f) }
             with<Branch>{
                 generation = maxGeneration
                 children = ArrayList()
@@ -39,8 +39,8 @@ class Tree : EntitySystem() {
         for (parent in leafBranches) {
             val parentPos = cPosition.get(parent)
             val parentBranch = cBranch.get(parent)
-            val xShift = parentBranch.maxLength * Math.cos(parentBranch.rotation.toDouble())
-            val yShift = parentBranch.maxLength * Math.sin(parentBranch.rotation.toDouble())
+            val xShift = parentBranch.maxLength * 0.95f * Math.cos(parentBranch.rotation.toDouble())
+            val yShift = parentBranch.maxLength * 0.95f * Math.sin(parentBranch.rotation.toDouble())
 
             val right = engine.entity {
                 with<Position>{ position = parentPos.position.cpy().add(vec2(xShift.toFloat(), yShift.toFloat())) }

@@ -17,6 +17,7 @@ import de.cronosx.baumi.component.*
 
 class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val textureBackground = Texture("background.png")
+    val textureGrass = Texture("grass.png")
     val engine = PooledEngine()
 
     override fun show() {
@@ -32,6 +33,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         batch.begin()
         batch.draw(textureBackground, 0f, 0f)
         engine.update(delta)
+        batch.draw(textureGrass, 0f, 0f)
         batch.end()
     }
 
