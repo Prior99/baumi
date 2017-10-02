@@ -3,14 +3,17 @@ package de.cronosx.baumi.data
 val defaultDna = DNA(
     rotation = Math.PI.toFloat() / 2f,
     perGenerationBranchLengthFactor = 0.6f,
-    growthSpeed = 2f,
+    growthSpeed = 0.1f,
     leafGrowProbability = 0.1f,
-    maxLeafCount = 10,
+    maxLeafCount = 5,
     minLengthGenerationThreshold = 0.3f,
     generateProbability = 0.3f,
     handToChildrenProbability = 0.4f,
     tripleProbability = 0.6f,
-    maxLength = 50f
+    maxLength = 50f,
+    maxGeneration = 4,
+    maxLeafRotationOffset = 0.2f,
+    initialSize = 10f
 )
 
 data class DNA (
@@ -23,5 +26,8 @@ data class DNA (
     val generateProbability: Float,
     val handToChildrenProbability: Float,
     val tripleProbability: Float,
-    val maxLength: Float
+    val maxLength: Float,
+    val maxGeneration: Int,
+    val maxLeafRotationOffset: Float,
+    val initialSize: Float
 )
