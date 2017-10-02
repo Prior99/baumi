@@ -4,7 +4,7 @@ val defaultDna = DNA(
         maxBranchLength = 50f,
         rotation = Math.PI.toFloat() / 2f,
         perGenerationBranchLengthFactor = 0.6f,
-        growthSpeed = 1f
+        growthSpeed = 10f
 )
 
 data class DNA (
