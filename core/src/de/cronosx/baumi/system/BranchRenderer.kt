@@ -23,7 +23,7 @@ class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
         val position = cPosition.get(entity).position
         val branch = cBranch.get(entity)
         val sprite = Sprite(branchTexture)
-        sprite.setScale(branch.maxLength / branchTexture.width)
+        sprite.setScale(branch.length / branchTexture.width)
         sprite.setOrigin(0f, branchTexture.height / 2f)
         sprite.rotation = radiansToDegrees * branch.rotation
         sprite.setPosition(position.x, position.y)
