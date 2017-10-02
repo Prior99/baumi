@@ -29,6 +29,7 @@ assets:
 	aseprite -b ase/missing-texture.ase --save-as assets/missing-texture.png --data /dev/null
 	aseprite -b ase/branch.ase --save-as assets/branch.png --data /dev/null
 	aseprite -b ase/dark-wood.ase --save-as assets/dark-wood.png --data /dev/null
+	aseprite -b ase/leaf.ase --save-as assets/leaf.png --data /dev/null
 
 @PHONEY: clean
 clean:

@@ -28,8 +28,6 @@ class Tree : EntitySystem() {
         onNewGeneration()
         onNewGeneration()
         onNewGeneration()
-        onNewGeneration()
-        onNewGeneration()
     }
 
     fun onNewGeneration() {
@@ -39,11 +37,14 @@ class Tree : EntitySystem() {
         for (parent in leafBranches) {
             val parentPos = cPosition.get(parent)
             val parentBranch = cBranch.get(parent)
-            val xShift = parentBranch.maxLength * 0.95f * Math.cos(parentBranch.rotation.toDouble())
-            val yShift = parentBranch.maxLength * 0.95f * Math.sin(parentBranch.rotation.toDouble())
+            val direction = vec2(
+                parentBranch.maxLength * Math.cos(parentBranch.rotation.toDouble()).toFloat(),
+                parentBranch.maxLength * Math.sin(parentBranch.rotation.toDouble()).toFloat()
+            )
+            val shift = direction.cpy().scl(0.95f);
 
             val right = engine.entity {
-                with<Position>{ position = parentPos.position.cpy().add(vec2(xShift.toFloat(), yShift.toFloat())) }
+                with<Position>{ position = parentPos.position.cpy().add(vec2(shift.x.toFloat(), shift.y.toFloat())) }
                 with<Branch>{
                     generation = maxGeneration + 1
                     children = ArrayList()
@@ -52,7 +53,7 @@ class Tree : EntitySystem() {
                 }
             }
             val center = engine.entity {
-                with<Position>{ position = parentPos.position.cpy().add(vec2(xShift.toFloat(), yShift.toFloat())) }
+                with<Position>{ position = parentPos.position.cpy().add(vec2(shift.x.toFloat(), shift.y.toFloat())) }
                 with<Branch>{
                     generation = maxGeneration + 1
                     children = ArrayList()
@@ -61,7 +62,7 @@ class Tree : EntitySystem() {
                 }
             }
             val left = engine.entity {
-                with<Position>{ position = parentPos.position.cpy().add(vec2(xShift.toFloat(), yShift.toFloat())) }
+                with<Position>{ position = parentPos.position.cpy().add(vec2(shift.x.toFloat(), shift.y.toFloat())) }
                 with<Branch>{
                     generation = maxGeneration + 1
                     children = ArrayList()
