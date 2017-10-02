@@ -21,6 +21,7 @@ class Tree(
     var leafProbability = 0.001f
 
     val cBranch = mapperFor<Branch>()
+    val cLeaf = mapperFor<Leaf>()
     val cPosition = mapperFor<Position>()
 
     var totalTime: Float = 0f
@@ -36,6 +37,7 @@ class Tree(
                 rotation = dna.rotation
             }
         }
+        onNewGeneration()
         onNewGeneration()
         onNewGeneration()
         onNewGeneration()
@@ -92,21 +94,10 @@ class Tree(
         for (parent in leafBranches) {
             val parentPos = cPosition.get(parent)
             val parentBranch = cBranch.get(parent)
-            val right = createBranch(
-                getChildPosition(parentPos, parentBranch),
-                parentBranch.rotation + Math.PI.toFloat() / 4f,
-                parentBranch.length
-            )
-            val center = createBranch(
-                getChildPosition(parentPos, parentBranch),
-                parentBranch.rotation,
-                parentBranch.length
-            )
-            val left = createBranch(
-                getChildPosition(parentPos, parentBranch),
-                parentBranch.rotation - Math.PI.toFloat() / 4f,
-                parentBranch.length
-            )
+            val newPosition = getChildPosition(parentPos, parentBranch)
+            val right = createBranch(newPosition, parentBranch.rotation + Math.PI.toFloat() / 4f, parentBranch.length)
+            val center = createBranch(newPosition, parentBranch.rotation, parentBranch.length)
+            val left = createBranch(newPosition, parentBranch.rotation - Math.PI.toFloat() / 4f, parentBranch.length)
             parentBranch.children.add(left)
             parentBranch.children.add(center)
             parentBranch.children.add(right)
@@ -116,11 +107,14 @@ class Tree(
     }
 
     fun grow(entity: Entity?, newPos: Vector2, delta: Float) {
-        val branch = cBranch.get(entity)
         val position = cPosition.get(entity)
-
         position.position = newPos
 
+        if (!cBranch.has(entity)) {
+            return
+        }
+
+        val branch = cBranch.get(entity)
         val maxBranchLengthInGeneration = dna.maxBranchLength *
             Math.pow(dna.perGenerationBranchLengthFactor.toDouble(), branch.generation.toDouble()).toFloat()
         if (branch.length < maxBranchLengthInGeneration) {
