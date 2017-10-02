@@ -17,8 +17,6 @@ class Tree(
         val dna: DNA = defaultDna,
         val initialSize: Float = 10f
 ) : EntitySystem() {
-    var maxGeneration = 0
-    var leafProbability = 0.001f
 
     val cBranch = mapperFor<Branch>()
     val cLeaf = mapperFor<Leaf>()
@@ -31,39 +29,21 @@ class Tree(
         root = engine.entity{
             with<Position>{ position = vec2(appWidth/ 2f, 13f) }
             with<Branch>{
-                generation = maxGeneration
                 children = ArrayList()
                 length = initialSize
                 rotation = dna.rotation
+                leafProbability = 0.0001f
+                maxLength = 50f
             }
         }
-        onNewGeneration()
-        onNewGeneration()
-        onNewGeneration()
-        onNewGeneration()
-        onNewGeneration()
     }
 
-    fun createBranch(newPosition: Vector2, newRotation: Float, parentBranchLength: Float): Entity {
-        val newLength = parentBranchLength * dna.perGenerationBranchLengthFactor
-        val dir = getDirectionVectorAlongBranch(newLength, newRotation)
+    fun createBranch(newPosition: Vector2, parent: Branch, rotationOffset: Float): Entity {
+        val newLength = 0f
+        val newRotation = parent.rotation + rotationOffset
         val newChildren: MutableList<Entity> = ArrayList()
-        val newGeneration = maxGeneration + 1
-        var leftRight = 1.0f
-        var i = 0f
-        while (i < 1f) {
-            if (Math.random() < leafProbability) {
-                newChildren.add(engine.entity {
-                    with<Position> { position = dir.cpy().scl(i).add(newPosition) }
-                    with<Leaf> {
-                        generation = newGeneration + 1
-                        rotation = newRotation + newRotation * Math.PI.toFloat() / 8f
-                    }
-                })
-            }
-            leftRight *= -1f
-            i += 0.1f
-        }
+        val newGeneration = parent.generation + 1
+        val newLeafProbability = parent.leafProbability * 10f
         return engine.entity {
             with<Position>{ position = newPosition }
             with<Branch>{
@@ -71,6 +51,8 @@ class Tree(
                 children = newChildren
                 length = newLength
                 rotation = newRotation
+                leafProbability = newLeafProbability
+                maxLength = 0.5f * parent.maxLength + Math.random().toFloat() * 0.2f - 0.1f
             }
         }
     }
@@ -87,42 +69,81 @@ class Tree(
         return parentPos.position.cpy().add(dir)
     }
 
-    fun onNewGeneration() {
-        val leafBranches = engine.entities
-                .filter{ cBranch.has(it) }
-                .filter{ cBranch.get(it).generation == maxGeneration }
-        for (parent in leafBranches) {
-            val parentPos = cPosition.get(parent)
-            val parentBranch = cBranch.get(parent)
-            val newPosition = getChildPosition(parentPos, parentBranch)
-            val right = createBranch(newPosition, parentBranch.rotation + Math.PI.toFloat() / 4f, parentBranch.length)
-            val center = createBranch(newPosition, parentBranch.rotation, parentBranch.length)
-            val left = createBranch(newPosition, parentBranch.rotation - Math.PI.toFloat() / 4f, parentBranch.length)
-            parentBranch.children.add(left)
-            parentBranch.children.add(center)
-            parentBranch.children.add(right)
-        }
-        maxGeneration++
-        leafProbability *= 10f;
+    fun newGeneration(parent: Entity) {
+        val parentPos = cPosition.get(parent)
+        val parentBranch = cBranch.get(parent)
+        val newPosition = getChildPosition(parentPos, parentBranch)
+        val right = createBranch(newPosition, parentBranch, Math.PI.toFloat() / 4f)
+        val center = createBranch(newPosition, parentBranch, 0f)
+        val left = createBranch(newPosition, parentBranch, -Math.PI.toFloat() / 4f)
+        parentBranch.children.add(left)
+        parentBranch.children.add(center)
+        parentBranch.children.add(right)
     }
 
-    fun grow(entity: Entity?, newPos: Vector2, delta: Float) {
-        val position = cPosition.get(entity)
-        position.position = newPos
-
-        if (!cBranch.has(entity)) {
-            return
+    fun grow(entity: Entity, delta: Float): Boolean {
+        if (!cBranch.has(entity) || !cPosition.has(entity)) {
+            return false
         }
 
         val branch = cBranch.get(entity)
-        val maxBranchLengthInGeneration = dna.maxBranchLength *
-            Math.pow(dna.perGenerationBranchLengthFactor.toDouble(), branch.generation.toDouble()).toFloat()
-        if (branch.length < maxBranchLengthInGeneration) {
-            branch.length += delta/dna.growthSpeed * maxBranchLengthInGeneration
+        val branchPosition = cPosition.get(entity).position
+
+        val childBranches = branch.children.filter{ cBranch.has(it) }
+        val childBranchCount = childBranches.count()
+        val generateBranches = childBranchCount == 0 &&
+            branch.length > dna.minLengthGenerationThreshold * branch.maxLength &&
+            Math.random() < dna.generateProbability
+        if (generateBranches) {
+            newGeneration(entity)
+            return true
         }
 
+        val handToChildren = Math.random() < dna.handToChildrenProbability
+        if (childBranchCount == 0 || !handToChildren) {
+            if (branch.length < branch.maxLength) {
+                branch.length += delta * dna.growthSpeed * branch.maxLength
+                adjust(entity, branchPosition)
+                return true
+            }
+
+        }
+        val growLeafs = Math.random() < dna.leafGrowProbability
+        if ((!growLeafs || handToChildren) && childBranchCount > 0) {
+            val index = Math.floor(Math.random() * childBranchCount).toInt()
+            val child = childBranches[index]
+            val childCouldGrow = grow(child, delta)
+            if (childCouldGrow) {
+                return true
+            }
+        }
+        val leafCount = branch.children.filter{ cLeaf.has(it) }.count()
+        if (Math.random() < branch.leafProbability && leafCount < dna.maxLeafCount) {
+            val i = Math.random().toFloat()
+            val offset = Math.random().toFloat() * 0.2f - 0.1f
+            val dir = getDirectionVectorAlongBranch(branch.length, branch.rotation)
+            branch.children.add(engine.entity {
+                with<Position> { position = dir.cpy().scl(i).add(branchPosition) }
+                with<Leaf> {
+                    generation = branch.generation + 1
+                    rotation = branch.rotation + offset * Math.PI.toFloat() / 8f
+                }
+            })
+            return true
+        }
+        return false
+    }
+
+    fun adjust(entity: Entity, newPos: Vector2) {
+        val branchPosition = cPosition.get(entity)
+        branchPosition.position = newPos
+        if (!cBranch.has(entity)) {
+            return
+        }
+        val branch = cBranch.get(entity)
+        val childPosition = getChildPosition(branchPosition, branch)
         for (child in branch.children) {
-            grow(child, getChildPosition(position, branch), delta)
+            adjust(child, childPosition)
         }
     }
 
@@ -136,6 +157,6 @@ class Tree(
 
         val rootPosition = cPosition.get(currentRoot)
 
-        grow(currentRoot, rootPosition.position, delta);
+        grow(currentRoot, delta);
     }
 }
