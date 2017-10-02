@@ -11,9 +11,11 @@ import ktx.ashley.entity
 import ktx.ashley.mapperFor
 import ktx.math.plus
 import ktx.math.vec2
+import ktx.log.*
 
 class Tree(
-        val dna: DNA = defaultDna
+        val dna: DNA = defaultDna,
+        val initialSize: Float = 10f
 ) : EntitySystem() {
     var maxGeneration = 0
 
@@ -29,7 +31,7 @@ class Tree(
             with<Branch>{
                 generation = maxGeneration
                 children = ArrayList()
-                length = dna.maxBranchLength
+                length = initialSize
                 rotation = dna.rotation
             }
         }
@@ -88,5 +90,35 @@ class Tree(
             parentBranch.children.add(right)
         }
         maxGeneration++
+    }
+
+    fun grow(entity: Entity?, newPos: Vector2, delta: Float) {
+        val branch = cBranch.get(entity)
+        val position = cPosition.get(entity)
+
+        position.position = newPos
+
+        val maxBranchLengthInGeneration = dna.maxBranchLength *
+            Math.pow(dna.perGenerationBranchLengthFactor.toDouble(), branch.generation.toDouble()).toFloat()
+        if (branch.length < maxBranchLengthInGeneration) {
+            branch.length += delta/dna.growthSpeed * maxBranchLengthInGeneration
+        }
+
+        for (child in branch.children) {
+            grow(child, getChildPosition(position, branch), delta)
+        }
+    }
+
+    override fun update(delta: Float) {
+        totalTime += delta
+
+        val currentRoot = root
+        if (currentRoot == null) {
+            return
+        }
+
+        val rootPosition = cPosition.get(currentRoot)
+
+        grow(currentRoot, rootPosition.position, delta);
     }
 }
