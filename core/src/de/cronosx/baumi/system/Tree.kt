@@ -33,7 +33,7 @@ class Tree(
                 length = initialSize
                 rotation = dna.rotation
                 leafProbability = 0.0001f
-                maxLength = 50f
+                maxLength = dna.maxLength
             }
         }
     }
@@ -52,7 +52,8 @@ class Tree(
                 length = newLength
                 rotation = newRotation
                 leafProbability = newLeafProbability
-                maxLength = 0.5f * parent.maxLength + Math.random().toFloat() * 0.2f - 0.1f
+                maxLength = dna.perGenerationBranchLengthFactor * parent.maxLength +
+                    Math.random().toFloat() * 0.2f - 0.1f
             }
         }
     }
@@ -73,11 +74,23 @@ class Tree(
         val parentPos = cPosition.get(parent)
         val parentBranch = cBranch.get(parent)
         val newPosition = getChildPosition(parentPos, parentBranch)
-        val right = createBranch(newPosition, parentBranch, Math.PI.toFloat() / 4f)
-        val center = createBranch(newPosition, parentBranch, 0f)
-        val left = createBranch(newPosition, parentBranch, -Math.PI.toFloat() / 4f)
+        if (Math.random() < dna.tripleProbability) {
+            val rightAngle = 0.2f + Math.random().toFloat() * 0.1f
+            val leftAngle = 0.2f + Math.random().toFloat() * 0.1f
+            val centerAngle = Math.random().toFloat() * 0.05f
+            val right = createBranch(newPosition, parentBranch, Math.PI.toFloat() * rightAngle)
+            val center = createBranch(newPosition, parentBranch, Math.PI.toFloat() * centerAngle)
+            val left = createBranch(newPosition, parentBranch, -Math.PI.toFloat() * leftAngle)
+            parentBranch.children.add(left)
+            parentBranch.children.add(center)
+            parentBranch.children.add(right)
+            return
+        }
+        val rightAngle = 0.1f + Math.random().toFloat() * 0.2f
+        val leftAngle = 0.1f + Math.random().toFloat() * 0.2f
+        val right = createBranch(newPosition, parentBranch, Math.PI.toFloat() * rightAngle)
+        val left = createBranch(newPosition, parentBranch, -Math.PI.toFloat() * leftAngle)
         parentBranch.children.add(left)
-        parentBranch.children.add(center)
         parentBranch.children.add(right)
     }
 

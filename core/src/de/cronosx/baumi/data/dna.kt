@@ -8,7 +8,9 @@ val defaultDna = DNA(
     maxLeafCount = 10,
     minLengthGenerationThreshold = 0.3f,
     generateProbability = 0.3f,
-    handToChildrenProbability = 0.4f
+    handToChildrenProbability = 0.4f,
+    tripleProbability = 0.6f,
+    maxLength = 50f
 )
 
 data class DNA (
@@ -19,5 +21,7 @@ data class DNA (
     val maxLeafCount: Int,
     val minLengthGenerationThreshold: Float,
     val generateProbability: Float,
-    val handToChildrenProbability: Float
+    val handToChildrenProbability: Float,
+    val tripleProbability: Float,
+    val maxLength: Float
 )
