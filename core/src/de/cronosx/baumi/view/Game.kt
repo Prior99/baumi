@@ -14,6 +14,7 @@ import ktx.math.*
 import ktx.log.*
 import de.cronosx.baumi.system.*
 import de.cronosx.baumi.component.*
+import de.cronosx.baumi.data.*
 
 class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val textureBackground = Texture("background.png")
@@ -22,7 +23,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     override fun show() {
         engine.addSystem(SimpleRenderer(batch))
         engine.addSystem(Clouds())
-        engine.addSystem(Tree())
+        engine.addSystem(Tree(defaultDna))
         engine.addSystem(BranchRenderer(batch))
     }
 
