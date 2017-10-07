@@ -29,6 +29,9 @@ class Tree() : EntitySystem() {
                 leafProbability = 0.0001f
                 maxLength = defaultDna.maxLength
                 dna = defaultDna
+                maxStorage = dna.maxStorageSize
+                maxHealth = dna.maxHealth,
+                health = dna.maxHealth
             }
         }
     }
@@ -39,6 +42,7 @@ class Tree() : EntitySystem() {
         val newChildren: MutableList<Entity> = ArrayList()
         val newGeneration = parent.generation + 1
         val newLeafProbability = parent.leafProbability * 10f
+        val newMaxHealth = parent.maxHealth * dna.maxHealthFalloff
         return engine.entity {
             with<Position>{ position = newPosition }
             with<Branch>{
@@ -50,6 +54,9 @@ class Tree() : EntitySystem() {
                 dna = parent.dna
                 maxLength = parent.dna.perGenerationBranchLengthFactor * parent.maxLength +
                     Math.random().toFloat() * 0.2f - 0.1f
+                maxStorage = parent.maxStorage * dna.maxStorageSizeFalloff
+                maxHealth = newMaxHealth
+                health = newMaxHealth
             }
         }
     }
@@ -112,6 +119,8 @@ class Tree() : EntitySystem() {
 
     fun lifeChildren(entity: Entity, delta: Float) {
         val branch = branches.get(entity)
+        val totalChildUpKeep = branch.childBranches().map{ it.getUpkeepDemand() }.sum()
+        if (totalChildUpKeep <= )
         for (child in branch.children) {
             life(child, delta)
         }
@@ -140,14 +149,32 @@ class Tree() : EntitySystem() {
         })
     }
 
-    fun life(entity: Entity, delta: Float) {
+    fun life(entity: Entity, delta: Float, energy: Float) {
+        // Ignore malformed entities
         if (!branches.has(entity) || !positions.has(entity)) {
             return
         }
+        val branch = branches.get(entity);
+        // Add the new energy to the branche's storage.
+        branch.storage += energy;
+        // Upkeeping.
+        branch.storage -= branch.dna.upKeep * delta
+        // If the branch ran out of energy while upkeeping itself, ...
+        if (branch.storage < 0) {
+            // ... impact the health.
+            branch.health += branch.storage
+            branch.storage = 0
+        }
+        // Don't iterate dead branches.
+        if (branch.dead()) {
+            return
+        }
+        // Make sure nobody dies.
+        upKeepChildren(entity, delta)
         growNewBranches(entity, delta)
         growLength(entity, delta)
         growLeafs(entity, delta)
-        lifeChildren(entity, delta)
+        branch.storage = Math.min(branch.storage, branch.maxStorage)
     }
 
     fun adjust(entity: Entity, newPos: Vector2) {
@@ -172,7 +199,7 @@ class Tree() : EntitySystem() {
         val rootPosition = positions.get(root)
         val currentRoot = root
         if (currentRoot != null) {
-            life(currentRoot, delta);
+            life(currentRoot, delta, delta * 10f);
         }
     }
 }

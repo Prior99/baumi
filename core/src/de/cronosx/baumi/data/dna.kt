@@ -13,7 +13,13 @@ val defaultDna = DNA(
     maxLength = 50f,
     maxGeneration = 4,
     maxLeafRotationOffset = 0.2f,
-    initialSize = 10f
+    initialSize = 10f,
+    maxStorage = 10f,
+    maxStorageFalloff = 0.6f,
+    upKeep = 0.5f,
+    leafUpKeep = 0.01f,
+    maxHealth = 10f,
+    maxHealthFalloff = 0.6f
 )
 
 data class DNA (
@@ -29,5 +35,11 @@ data class DNA (
     val maxLength: Float,
     val maxGeneration: Int,
     val maxLeafRotationOffset: Float,
-    val initialSize: Float
+    val initialSize: Float,
+    val maxStorageSize: Float,
+    val maxStorageSizeFalloff: Float,
+    val upKeep: Float,
+    val leafUpKeep: Float,
+    val maxHealth: Float,
+    val maxHealthFalloff: Float
 )
