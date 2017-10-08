@@ -29,8 +29,8 @@ class Tree() : EntitySystem() {
                 leafProbability = 0.0001f
                 maxLength = defaultDna.maxLength
                 dna = defaultDna
-                maxStorage = dna.maxStorageSize
-                maxHealth = dna.maxHealth,
+                maxStorage = dna.maxStorage
+                maxHealth = dna.maxHealth
                 health = dna.maxHealth
             }
         }
@@ -42,7 +42,7 @@ class Tree() : EntitySystem() {
         val newChildren: MutableList<Entity> = ArrayList()
         val newGeneration = parent.generation + 1
         val newLeafProbability = parent.leafProbability * 10f
-        val newMaxHealth = parent.maxHealth * dna.maxHealthFalloff
+        val newMaxHealth = parent.maxHealth * parent.dna.maxHealthFalloff
         return engine.entity {
             with<Position>{ position = newPosition }
             with<Branch>{
@@ -54,7 +54,7 @@ class Tree() : EntitySystem() {
                 dna = parent.dna
                 maxLength = parent.dna.perGenerationBranchLengthFactor * parent.maxLength +
                     Math.random().toFloat() * 0.2f - 0.1f
-                maxStorage = parent.maxStorage * dna.maxStorageSizeFalloff
+                maxStorage = parent.maxStorage * dna.maxStorageFalloff
                 maxHealth = newMaxHealth
                 health = newMaxHealth
             }
@@ -117,12 +117,18 @@ class Tree() : EntitySystem() {
         adjust(entity, branchPosition)
     }
 
-    fun lifeChildren(entity: Entity, delta: Float) {
+    fun upKeepChildren(entity: Entity, delta: Float) {
         val branch = branches.get(entity)
         val totalChildUpKeep = branch.childBranches().map{ it.getUpkeepDemand() }.sum()
-        if (totalChildUpKeep <= )
         for (child in branch.children) {
-            life(child, delta)
+            if (branches.has(child)) {
+                val childBranch = branches.get(child)
+                val demand = childBranch.getUpkeepDemand()
+                if (branch.getSurplus() - demand >= 0) {
+                    life(child, delta, demand)
+                    branch.storage -= demand
+                }
+            }
         }
     }
 
@@ -163,7 +169,7 @@ class Tree() : EntitySystem() {
         if (branch.storage < 0) {
             // ... impact the health.
             branch.health += branch.storage
-            branch.storage = 0
+            branch.storage = 0f
         }
         // Don't iterate dead branches.
         if (branch.dead()) {
@@ -171,6 +177,7 @@ class Tree() : EntitySystem() {
         }
         // Make sure nobody dies.
         upKeepChildren(entity, delta)
+        // Distribute 
         growNewBranches(entity, delta)
         growLength(entity, delta)
         growLeafs(entity, delta)

@@ -21,17 +21,20 @@ class Branch(
     val branches = mapperFor<Branch>()
     val leafs = mapperFor<Leaf>()
 
-    fun childBranches() {
+    fun childBranches(): List<Branch> {
         return children.filter{ branches.has(it) }.map{ branches.get(it) }
-    }
-
-    fun childLeafs() {
-        return children.filter{ leafs.has(it) }.map{ leafs.get(it) }
     }
 
     fun getUpkeepDemand(): Float {
         val childBranchUpKeep = childBranches().map{ it.getUpkeepDemand() }.sum()
-        return dna.upKeep + childLeafs().count() * dna.leafUpKeep + childBranchUpKeep
+        return dna.upKeep + childBranchUpKeep
+    }
+
+    fun getSurplus(): Float {
+        if (storage > maxStorage * dna.minStorageKeep) {
+            return storage - maxStorage
+        }
+        return 0f
     }
 
     fun dead(): Boolean {
