@@ -97,14 +97,18 @@ class Tree() : EntitySystem() {
         // The branch can only create new branches branches if ...
         // ... the branch didn't do so already
         val canGrow = childBranchCount == 0 &&
-        // ... the branch is old enough
+            // ... the branch is old enough
             branch.length > branch.dna.minLengthGenerationThreshold * branch.maxLength &&
-        // ... the branch isn't above the maximum generation
-            branch.generation < branch.dna.maxGeneration
+            // ... the branch isn't above the maximum generation
+            branch.generation < branch.dna.maxGeneration &&
+            // ... enough energy is available
+            branch.getSurplus() > branch.dna.branchingCost
         if (!canGrow) {
             return
         }
+        branch.storage -= branch.dna.branchingCost
         createNextGeneration(entity)
+        upKeepChildren(entity, delta)
     }
 
     fun growLength(entity: Entity, delta: Float) {
@@ -112,22 +116,25 @@ class Tree() : EntitySystem() {
         if (branch.length > branch.maxLength) {
             return
         }
-        branch.length += delta * branch.dna.growthSpeed * branch.maxLength
+        val theoreticalGrowAmount = delta * branch.dna.growthSpeed
+        val theoreticalGrowCost = theoreticalGrowAmount * branch.dna.growCost
+        val growBudget = branch.getSurplus() * branch.dna.surplusGrowUsageFactor
+        val actualGrowAmount = if (theoreticalGrowCost <= growBudget) theoreticalGrowAmount else
+            growBudget / branch.dna.growCost
+        branch.length += actualGrowAmount
         val branchPosition = positions.get(entity).position
         adjust(entity, branchPosition)
     }
 
     fun upKeepChildren(entity: Entity, delta: Float) {
         val branch = branches.get(entity)
-        val totalChildUpKeep = branch.childBranches().map{ it.getUpkeepDemand() }.sum()
+        val branchCount = branch.childBranches().count() + 1 // Including parent.
+        val perBranch = branch.getSurplus() + branchCount
         for (child in branch.children) {
             if (branches.has(child)) {
                 val childBranch = branches.get(child)
-                val demand = childBranch.getUpkeepDemand()
-                if (branch.getSurplus() - demand >= 0) {
-                    life(child, delta, demand)
-                    branch.storage -= demand
-                }
+                life(child, delta, perBranch)
+                branch.storage -= perBranch
             }
         }
     }
@@ -163,13 +170,17 @@ class Tree() : EntitySystem() {
         val branch = branches.get(entity);
         // Add the new energy to the branche's storage.
         branch.storage += energy;
+        info { "Adding ${energy} energy to branch in gen ${branch.generation}." }
+        info { "     Storage before upkeep: ${branch.storage}." }
         // Upkeeping.
         branch.storage -= branch.dna.upKeep * delta
+        info { "     Storage after upkeep: ${branch.storage}." }
         // If the branch ran out of energy while upkeeping itself, ...
         if (branch.storage < 0) {
             // ... impact the health.
             branch.health += branch.storage
             branch.storage = 0f
+            info { "Reducing health of branch in gen ${branch.generation} by ${branch.storage}" }
         }
         // Don't iterate dead branches.
         if (branch.dead()) {
@@ -177,10 +188,11 @@ class Tree() : EntitySystem() {
         }
         // Make sure nobody dies.
         upKeepChildren(entity, delta)
-        // Distribute 
-        growNewBranches(entity, delta)
-        growLength(entity, delta)
-        growLeafs(entity, delta)
+        while (branch.storage > branch.maxStorage) {
+            growNewBranches(entity, delta)
+            growLength(entity, delta)
+            growLeafs(entity, delta) // Not yet ported to energy system.
+        }
         branch.storage = Math.min(branch.storage, branch.maxStorage)
     }
 

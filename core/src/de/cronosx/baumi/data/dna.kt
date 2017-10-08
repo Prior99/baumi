@@ -20,7 +20,10 @@ val defaultDna = DNA(
     leafUpKeep = 0.01f,
     maxHealth = 10f,
     maxHealthFalloff = 0.6f,
-    minStorageKeep = 6f
+    minStorageKeep = 6f,
+    branchingCost = 2f,
+    growCost = 1f,
+    surplusGrowUsageFactor = 0.3f
 )
 
 data class DNA (
@@ -43,5 +46,8 @@ data class DNA (
     val leafUpKeep: Float,
     val maxHealth: Float,
     val maxHealthFalloff: Float,
-    val minStorageKeep: Float
+    val minStorageKeep: Float,
+    val branchingCost: Float,
+    val growCost: Float,
+    val surplusGrowUsageFactor: Float
 )
