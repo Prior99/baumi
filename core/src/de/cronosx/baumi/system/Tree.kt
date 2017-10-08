@@ -21,7 +21,7 @@ class Tree() : EntitySystem() {
 
     override fun addedToEngine(engine: Engine) {
         root = engine.entity{
-            with<Position>{ position = vec2(appWidth/ 2f, 13f) }
+            with<Position>{ position = vec2(appWidth/ 2f, 320f) }
             with<Branch>{
                 children = ArrayList()
                 length = defaultDna.initialSize
@@ -61,7 +61,7 @@ class Tree() : EntitySystem() {
         )
     }
 
-    fun getChildPosition(parentPos: Position, parentBranch: Branch, positionAlongBranch: Float = 1f): Vector2 {
+    fun getChildPosition(parentPos: Position, parentBranch: Branch, positionAlongBranch: Float = 0.94f): Vector2 {
         val dir = getDirectionVectorAlongBranch(parentBranch.length, parentBranch.rotation)
         return parentPos.position.cpy().add(dir.scl(positionAlongBranch))
     }

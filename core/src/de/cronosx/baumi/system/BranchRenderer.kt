@@ -17,12 +17,14 @@ class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
         allOf(Branch::class, Position::class).get(), ZComparator()) {
     val cBranch = mapperFor<Branch>()
     val cPosition = mapperFor<Position>()
-    val branchTexture = Texture("dark-wood.png")
+    val branchTexture = Texture("branch.png")
+    val trunkTexture = Texture("trunk.png")
 
     override fun processEntity(entity: Entity, delta: Float) {
         val position = cPosition.get(entity).position
         val branch = cBranch.get(entity)
-        val sprite = Sprite(branchTexture)
+        val tex = if (branch.generation === 0) trunkTexture else branchTexture
+        val sprite = Sprite(tex)
         sprite.setScale(branch.length / branchTexture.width)
         sprite.setOrigin(0f, branchTexture.height / 2f)
         sprite.rotation = radiansToDegrees * branch.rotation

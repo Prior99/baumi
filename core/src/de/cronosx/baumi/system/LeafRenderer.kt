@@ -25,7 +25,8 @@ class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
         val sprite = Sprite(leafTexture)
         sprite.setOrigin(0f, leafTexture.height / 2f)
         sprite.rotation = radiansToDegrees * leaf.rotation
-        sprite.setPosition(position.x, position.y + leafTexture.height / 2f + 1)
+        sprite.setPosition(position.x, position.y + leafTexture.height / 2f - 10)
+        sprite.setScale(0.3f)
         sprite.draw(batch)
     }
 

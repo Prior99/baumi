@@ -16,14 +16,14 @@ class Clouds(var batch: Batch) : IteratingSystem(
         allOf(Cloud::class, Position::class).get()) {
     val cCloud = mapperFor<Cloud>()
     val cPosition = mapperFor<Position>()
-    val textureCloud = Texture("clouds.png")
+    val textureCloud = Texture("cloud.png")
 
     override fun processEntity(entity: Entity, delta: Float) {
         val position = cPosition.get(entity).position
         val cloud = cCloud.get(entity)
         position.x -= cloud.speed * delta
-        val region = TextureRegion(textureCloud, 0, 12 * cloud.index, 120, 12)
-        batch.draw(region, position.x, position.y)
+        /* val region = TextureRegion(textureCloud, 0, 12 * cloud.index, 120, 12) */
+        batch.draw(textureCloud, position.x, position.y)
         if (position.x + textureCloud.width < 0) {
             engine.removeEntity(entity)
         }

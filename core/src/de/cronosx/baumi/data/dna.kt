@@ -10,10 +10,10 @@ val defaultDna = DNA(
     generateProbability = 0.3f,
     handToChildrenProbability = 0.4f,
     tripleProbability = 0.6f,
-    maxLength = 50f,
-    maxGeneration = 4,
+    maxLength = 400f,
+    maxGeneration = 5,
     maxLeafRotationOffset = 0.2f,
-    initialSize = 10f
+    initialSize = 100f
 )
 
 data class DNA (
