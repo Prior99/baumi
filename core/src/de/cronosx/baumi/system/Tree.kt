@@ -2,7 +2,7 @@ package de.cronosx.baumi.system
 
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.core.EntitySystem
+import com.badlogic.ashley.systems.IntervalSystem
 import com.badlogic.gdx.math.Vector2
 import de.cronosx.baumi.appWidth
 import de.cronosx.baumi.component.*
@@ -29,22 +29,22 @@ class Tree() : IntervalSystem(1f) {
                 position = vec2(appWidth/ 2f, 13f)
             }
             with<Branch> {
-                rotation = dna.rotation.initial
-                length = dna.length.initial
-                maxLength = dna.length.max
-                leafProbability = dna.leafs.leafGrowProbability
+                rotation = defaultDna.rotation.initial
+                length = defaultDna.length.initial
+                maxLength = defaultDna.length.max
+                leafProbability = defaultDna.leafs.leafGrowProbability
                 children = ArrayList()
             }
             with<Genetic> {
                 dna = defaultDna
             }
             with<Health> {
-                max = dna.health.max
-                current = dna.health.max
+                max = defaultDna.health.max
+                current = defaultDna.health.max
             }
             with<Consumer> {
-                maxEnergy = dna.energy.max,
-                rate = dna.energy.upkeep
+                maxEnergy = defaultDna.energy.max
+                rate = defaultDna.energy.upkeep
             }
         }
     }
@@ -53,6 +53,7 @@ class Tree() : IntervalSystem(1f) {
         val parentBranch = branches.get(parent)
         val parentGenetic = genetics.get(parent)
         val parentHealth = healths.get(parent)
+        val parentConsumer = consumers.get(parent)
 
         val newLength = 0f
         val newRotation = parentBranch.rotation + rotationOffset
@@ -61,7 +62,7 @@ class Tree() : IntervalSystem(1f) {
         val newLeafProbability = parentBranch.leafProbability * 10f
         val newMaxHealth = parentHealth.max* parentGenetic.dna.health.falloff
         val newMaxLength =
-            parentGenetic.dna.perGenerationBranchLengthFactor * parentBranch.maxLength +
+            parentGenetic.dna.length.falloff * parentBranch.maxLength +
             Math.random().toFloat() * 0.2f - 0.1f
         return engine.entity {
             with<Position> {
@@ -83,7 +84,7 @@ class Tree() : IntervalSystem(1f) {
                 current = newMaxHealth
             }
             with<Consumer> {
-                maxStorage = parent.maxStorage * dna.maxStorageFalloff
+                maxEnergy = parentConsumer.maxEnergy * parentGenetic.dna.energy.falloff
             }
         }
     }
@@ -108,11 +109,11 @@ class Tree() : IntervalSystem(1f) {
         val newPosition = getChildPosition(parentPosition, parentBranch)
         val rightAngle = 0.1f + Math.random().toFloat() * 0.2f
         val leftAngle = 0.1f + Math.random().toFloat() * 0.2f
-        val right = createBranch(newPosition, parentBranch, Math.PI.toFloat() * rightAngle)
-        val left = createBranch(newPosition, parentBranch, -Math.PI.toFloat() * leftAngle)
+        val right = createBranch(newPosition, parent, Math.PI.toFloat() * rightAngle)
+        val left = createBranch(newPosition, parent, -Math.PI.toFloat() * leftAngle)
         parentBranch.children.add(left)
         parentBranch.children.add(right)
-        if (Math.random() < parentGenetic.dna.tripleProbability) {
+        if (Math.random() < parentGenetic.dna.branching.tripleProbability) {
             val centerAngle = Math.random().toFloat() * 0.05f
             val center = createBranch(newPosition, parent, Math.PI.toFloat() * centerAngle)
             parentBranch.children.add(center)
@@ -138,7 +139,7 @@ class Tree() : IntervalSystem(1f) {
         if (!canGrow) {
             return
         }
-        consumer.storage -= branchingGene.branchingCost
+        consumer.energy -= branchingGene.branchCost
         createNextGeneration(entity)
     }
 
@@ -159,7 +160,7 @@ class Tree() : IntervalSystem(1f) {
     fun growLeafs(entity: Entity, delta: Float) {
         val branch = branches.get(entity)
         val leafsGene = genetics.get(entity).dna.leafs
-        val position = positions.get(entity).position
+        val parentBranch = positions.get(entity).position
 
         val leafCount = branch.children.filter{ leafs.has(it) }.count()
         if (leafCount > leafsGene.max) {
@@ -167,11 +168,11 @@ class Tree() : IntervalSystem(1f) {
         }
 
         val randomPositionAlongBranch = Math.random().toFloat()
-        val rotationOffset = Math.random().toFloat() * leafsGene.maxRotationOffset * 2f - leafGene.maxRotationOffset
+        val rotationOffset = Math.random().toFloat() * leafsGene.maxRotationOffset * 2f - leafsGene.maxRotationOffset
         val dir = getDirectionVectorAlongBranch(branch.length, branch.rotation)
         branch.children.add(engine.entity {
             with<Position> {
-                position = dir.cpy().scl(randomPositionAlongBranch).add(branchPosition)
+                position = dir.cpy().scl(randomPositionAlongBranch).add(parentBranch)
             }
             with<Leaf> {
                 generation = branch.generation + 1
@@ -183,12 +184,12 @@ class Tree() : IntervalSystem(1f) {
 
     /**
      * This function distributes the specified amount of energy across all entities.
-     * @param energy The amount of energy to distribute across the system.
+     * @param contingent The amount of energy available to the system.
      */
-    fun life(energy: Float) {
-        val branch = branches.get(entity);
+    fun life(contingent: Float) {
+        val branch = branches.get(entity)
         // Add the new energy to the branche's storage.
-        branch.storage += energy;
+        branch.storage += energy
         info { "Adding ${energy} energy to branch in gen ${branch.generation}." }
         info { "     Storage before upkeep: ${branch.storage}." }
         // Upkeeping.
@@ -220,7 +221,7 @@ class Tree() : IntervalSystem(1f) {
      * This function recursively loops over all branches and fixes their positions after
      * each tick's update.
      */
-    fun adjust(entity: Entity, newPos?: Vector2) {
+    fun adjust(entity: Entity, newPos: Vector2) {
         val position = positions.get(entity)
         if (newPos != null) {
             position.position = newPos
