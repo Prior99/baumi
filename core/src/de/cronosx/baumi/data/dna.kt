@@ -5,10 +5,11 @@ data class GeneRotation (
 )
 
 data class GeneLeafs (
-    val leafGrowProbability: Float,
-    val max: Int,
+    val initialMax: Int,
+    val maxFalloff: Int,
     val maxRotationOffset: Float,
-    val upkeep: Float
+    val upkeep: Float,
+    val leafCost: Float
 )
 
 data class GeneLength (
@@ -53,10 +54,11 @@ val defaultDna = DNA(
         initial = Math.PI.toFloat() / 2f
     ),
     leafs = GeneLeafs(
-        leafGrowProbability = 0.1f,
-        max = 5,
+        initialMax = 1,
+        maxFalloff = -1,
         maxRotationOffset = 0.2f,
-        upkeep = 0.01f
+        upkeep = 0.01f,
+        leafCost = 1f
     ),
     length = GeneLength(
         growthSpeed = 0.1f,

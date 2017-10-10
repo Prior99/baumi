@@ -11,4 +11,6 @@ class Consumer(
     var rate: Float = 0f,
     var priority: Float = 0f
 ) : Component {
+    val remainingBufferCapacity: Float
+        get() = maxEnergy - energy
 }

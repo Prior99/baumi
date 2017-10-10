@@ -13,7 +13,7 @@ import ktx.math.plus
 import ktx.math.vec2
 import ktx.log.*
 
-class Tree() : IntervalSystem(1f) {
+class Tree() : IntervalSystem(0.1f) {
     val branches = mapperFor<Branch>()
     val genetics = mapperFor<Genetic>()
     val healths = mapperFor<Health>()
@@ -22,6 +22,7 @@ class Tree() : IntervalSystem(1f) {
     val positions = mapperFor<Position>()
 
     var root: Entity? = null
+    var tick = 0
 
     override fun addedToEngine(engine: Engine) {
         root = engine.entity{
@@ -32,8 +33,8 @@ class Tree() : IntervalSystem(1f) {
                 rotation = defaultDna.rotation.initial
                 length = defaultDna.length.initial
                 maxLength = defaultDna.length.max
-                leafProbability = defaultDna.leafs.leafGrowProbability
                 children = ArrayList()
+                maxLeafs = defaultDna.leafs.initialMax
             }
             with<Genetic> {
                 dna = defaultDna
@@ -50,39 +51,30 @@ class Tree() : IntervalSystem(1f) {
         }
     }
 
-    fun createBranch(newPosition: Vector2, parent: Entity, rotationOffset: Float): Entity {
+    fun createBranch(parent: Entity, rotationOffset: Float): Entity {
         val parentBranch = branches.get(parent)
         val parentGenetic = genetics.get(parent)
         val parentHealth = healths.get(parent)
         val parentConsumer = consumers.get(parent)
 
-        val newLength = 0f
-        val newRotation = parentBranch.rotation + rotationOffset
-        val newChildren: MutableList<Entity> = ArrayList()
-        val newGeneration = parentBranch.generation + 1
-        val newLeafProbability = parentBranch.leafProbability * 10f
-        val newMaxHealth = parentHealth.max* parentGenetic.dna.health.falloff
         val newMaxLength =
             parentGenetic.dna.length.falloff * parentBranch.maxLength +
             Math.random().toFloat() * 0.2f - 0.1f
         return engine.entity {
-            with<Position> {
-                position = newPosition
-            }
+            with<Position> {} // Will be adjusted anyway.
             with<Branch> {
-                rotation = newRotation
-                length = newLength
+                rotation = parentBranch.rotation + rotationOffset
                 maxLength = newMaxLength
-                generation = newGeneration
-                leafProbability = newLeafProbability
-                children = newChildren
+                generation = parentBranch.generation + 1
+                children = ArrayList()
+                maxLeafs = parentBranch.maxLeafs - parentGenetic.dna.leafs.maxFalloff
             }
             with<Genetic> {
                 dna = parentGenetic.dna
             }
             with<Health> {
-                max = newMaxHealth
-                current = newMaxHealth
+                max = parentHealth.max * parentGenetic.dna.health.falloff
+                current = max
             }
             with<Consumer> {
                 maxEnergy = parentConsumer.maxEnergy * parentGenetic.dna.energy.falloff
@@ -103,78 +95,41 @@ class Tree() : IntervalSystem(1f) {
         return parentPos.position.cpy().add(dir.scl(positionAlongBranch))
     }
 
-    fun createNextGeneration(parent: Entity) {
+    fun growBranches(parent: Entity) {
         val parentPosition = positions.get(parent)
         val parentBranch = branches.get(parent)
         val parentGenetic = genetics.get(parent)
 
-        val newPosition = getChildPosition(parentPosition, parentBranch)
         val rightAngle = 0.1f + Math.random().toFloat() * 0.2f
         val leftAngle = 0.1f + Math.random().toFloat() * 0.2f
-        val right = createBranch(newPosition, parent, Math.PI.toFloat() * rightAngle)
-        val left = createBranch(newPosition, parent, -Math.PI.toFloat() * leftAngle)
+        val right = createBranch(parent, Math.PI.toFloat() * rightAngle)
+        val left = createBranch(parent, -Math.PI.toFloat() * leftAngle)
         parentBranch.children.add(left)
         parentBranch.children.add(right)
         if (Math.random() < parentGenetic.dna.branching.tripleProbability) {
             val centerAngle = Math.random().toFloat() * 0.05f
-            val center = createBranch(newPosition, parent, Math.PI.toFloat() * centerAngle)
+            val center = createBranch(parent, Math.PI.toFloat() * centerAngle)
             parentBranch.children.add(center)
         }
-    }
-
-    fun growNewBranches(entity: Entity) {
-        val branch = branches.get(entity)
-        val branchingGene = genetics.get(entity).dna.branching
-        val consumer = consumers.get(entity)
-
-        val childBranches = branch.children.filter{ branches.has(it) }
-        val childBranchCount = childBranches.count()
-        // The branch can only create new branches branches if ...
-        // ... the branch didn't do so already
-        val canGrow = childBranchCount == 0 &&
-            // ... the branch is old enough
-            branch.length > branchingGene.minLength * branch.maxLength &&
-            // ... the branch isn't above the maximum generation
-            branch.generation < branchingGene.maxDepth &&
-            // ... enough energy is available
-            consumer.energy > branchingGene.branchCost
-        if (!canGrow) {
-            return
-        }
-        consumer.energy -= branchingGene.branchCost
-        createNextGeneration(entity)
     }
 
     fun growLength(entity: Entity) {
         val branch = branches.get(entity)
         val lengthGene = genetics.get(entity).dna.length
-        val consumer = consumers.get(entity)
-
-        // Don't grow longer than the maximum.
-        if (branch.length > branch.maxLength) {
-            return
-        }
-        if (consumer.energy > lengthGene.growCost) {
-            branch.length += lengthGene.growthSpeed
-        }
+        branch.length += lengthGene.growthSpeed
     }
 
-    fun growLeafs(entity: Entity) {
+    fun growLeaf(entity: Entity) {
         val branch = branches.get(entity)
         val leafsGene = genetics.get(entity).dna.leafs
         val parentBranch = positions.get(entity).position
-
-        val leafCount = branch.children.filter{ leafs.has(it) }.count()
-        if (leafCount > leafsGene.max) {
-            return
-        }
 
         val randomPositionAlongBranch = Math.random().toFloat()
         val rotationOffset = Math.random().toFloat() * leafsGene.maxRotationOffset * 2f - leafsGene.maxRotationOffset
         val dir = getDirectionVectorAlongBranch(branch.length, branch.rotation)
         branch.children.add(engine.entity {
             with<Position> {
-                position = dir.cpy().scl(randomPositionAlongBranch).add(parentBranch)
+                position = dir.cpy().scl(randomPositionAlongBranch) + parentBranch
             }
             with<Leaf> {
                 generation = branch.generation + 1
@@ -189,10 +144,15 @@ class Tree() : IntervalSystem(1f) {
      * @param contingent The amount of energy available to the system.
      */
     fun life(initialContingent: Float) {
+        info {
+            "Calculating lifecycle ${tick} with contingent of ${initialContingent}" +
+            " for ${engine.entities.count()} entities:"
+        }
         val sortedEntities = engine.entities
             .filter{ consumers.has(it) }
-            .sortedWith(compareBy{ consumers.get(it).priority })
+            .sortedWith(compareBy{ -consumers.get(it).priority })
         var currentContingent = initialContingent
+        // 1. Make sure nobody dies.
         for (entity in sortedEntities) {
             val consumer = consumers.get(entity)
             // If the contingent is large enough to fullfill the consumer's needs, reduce the contingent and continue.
@@ -205,9 +165,65 @@ class Tree() : IntervalSystem(1f) {
             // If not and the consumer has a health component, impact it.
             if (healths.has(entity)) {
                 val loss = consumer.rate - maxOf(currentContingent, 0f)
-                info { "Reducing health of entity by ${loss}." }
+                info { "    Reducing health of entity by ${loss}." }
                 healths.get(entity).current -= loss
             }
+        }
+        if (currentContingent <= 0) {
+            info { "    => Contingent depleted after upkeep." }
+            return;
+        }
+        // 2. Fill buffers.
+        for (entity in sortedEntities) {
+            val consumer = consumers.get(entity)
+            val energyGain = minOf(currentContingent, consumer.remainingBufferCapacity)
+            if (energyGain > 0) {
+                info { "    Increasing buffer from ${consumer.energy} to ${consumer.energy + energyGain}."}
+            }
+            currentContingent -= energyGain
+            consumer.energy += energyGain
+        }
+        if (currentContingent <= 0) {
+            info { "    => Contingent depleted after filling energy storages." }
+            return;
+        }
+        // 3. Handle branches
+        for (entity in sortedEntities) {
+            if (!branches.has(entity) || !genetics.has(entity)) {
+                continue
+            }
+            val branch = branches.get(entity)
+            val dna = genetics.get(entity).dna
+            // 3.1. Branching
+            val canGrowBranches = branch.children.filter{ branches.has(it) }.count() == 0 &&
+                branch.length > dna.branching.minLength * branch.maxLength &&
+                branch.generation < dna.branching.maxDepth &&
+                currentContingent >= dna.branching.branchCost
+            if (canGrowBranches) {
+                info { "Growing branches." }
+                growBranches(entity)
+                currentContingent -= dna.branching.branchCost
+            }
+            // 3.2. Growing length
+            val canGrowLength = branch.length < branch.maxLength &&
+                currentContingent >= dna.length.growCost
+            if (canGrowLength) {
+                info { "Growing length." }
+                growLength(entity)
+                currentContingent -= dna.length.growCost
+            }
+            // 3.3. Growing leafs
+            val canGrowLeaf =
+                branch.children.filter{ leafs.has(it) }.count() < branch.maxLeafs &&
+                currentContingent >= dna.leafs.leafCost
+            if (canGrowLeaf) {
+                info { "Growing a leaf." }
+                growLeaf(entity)
+                currentContingent -= dna.leafs.leafCost
+            }
+        }
+        if (currentContingent > 0) {
+            info { "    => Contingent was not depleted. Contingent of ${currentContingent} left." }
         }
     }
 
@@ -237,7 +253,8 @@ class Tree() : IntervalSystem(1f) {
     }
 
     override fun updateInterval() {
-        life(2f)
+        tick++
+        life(3f)
         adjust()
     }
 }
