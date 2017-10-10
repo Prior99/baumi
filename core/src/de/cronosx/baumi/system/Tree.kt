@@ -146,6 +146,17 @@ class Tree() : IntervalSystem(0.01f) {
         })
     }
 
+    fun killRecursively(entity: Entity) {
+        info { "Killing entity." }
+        val health = healths.get(entity)
+        health.current = 0f
+        if (!branches.has(entity)) {
+            return
+        }
+        val branch = branches.get(entity)
+        branch.children.forEach{ killRecursively(it) }
+    }
+
     /**
      * This function distributes the specified amount of energy across all entities.
      * @param contingent The amount of energy available to the system.
@@ -173,7 +184,13 @@ class Tree() : IntervalSystem(0.01f) {
             if (healths.has(entity)) {
                 val loss = consumer.rate - maxOf(currentContingent, 0f)
                 info { "    Reducing health of entity by ${loss}." }
-                healths.get(entity).current -= loss
+                val health = healths.get(entity)
+                health.current -= loss
+                if (health.current <= 0f) {
+                    if (branches.has(entity)) {
+                        killRecursively(entity)
+                    }
+                }
             }
         }
         if (currentContingent <= 0) {
