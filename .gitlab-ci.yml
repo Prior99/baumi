@@ -1,18 +1,5 @@
 stages:
-  - assets
   - build
-
-assets:
-  image: "debian:stretch"
-  before_script:
-    - apt-get -qq -y update
-    - apt-get -qq -y install aseprite make xvfb
-  script:
-    - xvfb-run make assets
-  stage: assets
-  artifacts:
-    paths:
-      - assets
 
 android:
   image: "cangol/android-gradle"
@@ -26,8 +13,6 @@ android:
   artifacts:
     paths:
       - "*.apk"
-  dependencies:
-    - assets
 
 desktop:
   image: "cangol/android-gradle"
@@ -40,5 +25,3 @@ desktop:
   artifacts:
     paths:
       - "*.jar"
-  dependencies:
-    - assets
