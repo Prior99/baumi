@@ -13,50 +13,77 @@ import ktx.math.plus
 import ktx.math.vec2
 import ktx.log.*
 
-class Tree() : EntitySystem() {
+class Tree() : IntervalSystem(1f) {
     val branches = mapperFor<Branch>()
+    val genetics = mapperFor<Genetic>()
+    val healths = mapperFor<Health>()
+    val consumers = mapperFor<Consumer>()
     val leafs = mapperFor<Leaf>()
     val positions = mapperFor<Position>()
+
     var root: Entity? = null
 
     override fun addedToEngine(engine: Engine) {
         root = engine.entity{
-            with<Position>{ position = vec2(appWidth/ 2f, 13f) }
-            with<Branch>{
+            with<Position>{
+                position = vec2(appWidth/ 2f, 13f)
+            }
+            with<Branch> {
+                rotation = dna.rotation.initial
+                length = dna.length.initial
+                maxLength = dna.length.max
+                leafProbability = dna.leafs.leafGrowProbability
                 children = ArrayList()
-                length = defaultDna.initialSize
-                rotation = defaultDna.rotation
-                leafProbability = 0.0001f
-                maxLength = defaultDna.maxLength
+            }
+            with<Genetic> {
                 dna = defaultDna
-                maxStorage = dna.maxStorage
-                maxHealth = dna.maxHealth
-                health = dna.maxHealth
+            }
+            with<Health> {
+                max = dna.health.max
+                current = dna.health.max
+            }
+            with<Consumer> {
+                maxEnergy = dna.energy.max,
+                rate = dna.energy.upkeep
             }
         }
     }
 
-    fun createBranch(newPosition: Vector2, parent: Branch, rotationOffset: Float): Entity {
+    fun createBranch(newPosition: Vector2, parent: Entity, rotationOffset: Float): Entity {
+        val parentBranch = branches.get(parent)
+        val parentGenetic = genetics.get(parent)
+        val parentHealth = healths.get(parent)
+
         val newLength = 0f
-        val newRotation = parent.rotation + rotationOffset
+        val newRotation = parentBranch.rotation + rotationOffset
         val newChildren: MutableList<Entity> = ArrayList()
-        val newGeneration = parent.generation + 1
-        val newLeafProbability = parent.leafProbability * 10f
-        val newMaxHealth = parent.maxHealth * parent.dna.maxHealthFalloff
+        val newGeneration = parentBranch.generation + 1
+        val newLeafProbability = parentBranch.leafProbability * 10f
+        val newMaxHealth = parentHealth.max* parentGenetic.dna.health.falloff
+        val newMaxLength =
+            parentGenetic.dna.perGenerationBranchLengthFactor * parentBranch.maxLength +
+            Math.random().toFloat() * 0.2f - 0.1f
         return engine.entity {
-            with<Position>{ position = newPosition }
-            with<Branch>{
-                generation = newGeneration
-                children = newChildren
-                length = newLength
+            with<Position> {
+                position = newPosition
+            }
+            with<Branch> {
                 rotation = newRotation
+                length = newLength
+                maxLength = newMaxLength
+                generation = newGeneration
                 leafProbability = newLeafProbability
-                dna = parent.dna
-                maxLength = parent.dna.perGenerationBranchLengthFactor * parent.maxLength +
-                    Math.random().toFloat() * 0.2f - 0.1f
+                children = newChildren
+            }
+            with<Genetic> {
+                dna = parentGenetic.dna
+            }
+            with<Health> {
+                max = newMaxHealth
+                current = newMaxHealth
+            }
+            with<Consumer> {
                 maxStorage = parent.maxStorage * dna.maxStorageFalloff
-                maxHealth = newMaxHealth
-                health = newMaxHealth
             }
         }
     }
@@ -74,81 +101,73 @@ class Tree() : EntitySystem() {
     }
 
     fun createNextGeneration(parent: Entity) {
-        val parentPos = positions.get(parent)
+        val parentPosition = positions.get(parent)
         val parentBranch = branches.get(parent)
-        val newPosition = getChildPosition(parentPos, parentBranch)
+        val parentGenetic = genetics.get(parent)
+
+        val newPosition = getChildPosition(parentPosition, parentBranch)
         val rightAngle = 0.1f + Math.random().toFloat() * 0.2f
         val leftAngle = 0.1f + Math.random().toFloat() * 0.2f
         val right = createBranch(newPosition, parentBranch, Math.PI.toFloat() * rightAngle)
         val left = createBranch(newPosition, parentBranch, -Math.PI.toFloat() * leftAngle)
         parentBranch.children.add(left)
         parentBranch.children.add(right)
-        if (Math.random() < parentBranch.dna.tripleProbability) {
+        if (Math.random() < parentGenetic.dna.tripleProbability) {
             val centerAngle = Math.random().toFloat() * 0.05f
-            val center = createBranch(newPosition, parentBranch, Math.PI.toFloat() * centerAngle)
+            val center = createBranch(newPosition, parent, Math.PI.toFloat() * centerAngle)
             parentBranch.children.add(center)
         }
     }
 
-    fun growNewBranches(entity: Entity, delta: Float) {
+    fun growNewBranches(entity: Entity) {
         val branch = branches.get(entity)
+        val branchingGene = genetics.get(entity).dna.branching
+        val consumer = consumers.get(entity)
+
         val childBranches = branch.children.filter{ branches.has(it) }
         val childBranchCount = childBranches.count()
         // The branch can only create new branches branches if ...
         // ... the branch didn't do so already
         val canGrow = childBranchCount == 0 &&
             // ... the branch is old enough
-            branch.length > branch.dna.minLengthGenerationThreshold * branch.maxLength &&
+            branch.length > branchingGene.minLength * branch.maxLength &&
             // ... the branch isn't above the maximum generation
-            branch.generation < branch.dna.maxGeneration &&
+            branch.generation < branchingGene.maxDepth &&
             // ... enough energy is available
-            branch.getSurplus() > branch.dna.branchingCost
+            consumer.energy > branchingGene.branchCost
         if (!canGrow) {
             return
         }
-        branch.storage -= branch.dna.branchingCost
+        consumer.storage -= branchingGene.branchingCost
         createNextGeneration(entity)
-        upKeepChildren(entity, delta)
     }
 
-    fun growLength(entity: Entity, delta: Float) {
+    fun growLength(entity: Entity) {
         val branch = branches.get(entity)
+        val lengthGene = genetics.get(entity).dna.length
+        val consumer = consumers.get(entity)
+
+        // Don't grow longer than the maximum.
         if (branch.length > branch.maxLength) {
             return
         }
-        val theoreticalGrowAmount = delta * branch.dna.growthSpeed
-        val theoreticalGrowCost = theoreticalGrowAmount * branch.dna.growCost
-        val growBudget = branch.getSurplus() * branch.dna.surplusGrowUsageFactor
-        val actualGrowAmount = if (theoreticalGrowCost <= growBudget) theoreticalGrowAmount else
-            growBudget / branch.dna.growCost
-        branch.length += actualGrowAmount
-        val branchPosition = positions.get(entity).position
-        adjust(entity, branchPosition)
-    }
-
-    fun upKeepChildren(entity: Entity, delta: Float) {
-        val branch = branches.get(entity)
-        val branchCount = branch.childBranches().count() + 1 // Including parent.
-        val perBranch = branch.getSurplus() + branchCount
-        for (child in branch.children) {
-            if (branches.has(child)) {
-                val childBranch = branches.get(child)
-                life(child, delta, perBranch)
-                branch.storage -= perBranch
-            }
+        if (consumer.energy > lengthGene.growCost) {
+            branch.length += lengthGene.growthSpeed
         }
     }
 
     fun growLeafs(entity: Entity, delta: Float) {
         val branch = branches.get(entity)
+        val leafsGene = genetics.get(entity).dna.leafs
+        val position = positions.get(entity).position
+
         val leafCount = branch.children.filter{ leafs.has(it) }.count()
-        if (leafCount > branch.getMaxLeafs()) {
+        if (leafCount > leafsGene.max) {
             return
         }
-        val branchPosition = positions.get(entity).position
+
         val randomPositionAlongBranch = Math.random().toFloat()
-        val rotationOffset =
-            Math.random().toFloat() * branch.dna.maxLeafRotationOffset * 2f - branch.dna.maxLeafRotationOffset
+        val rotationOffset = Math.random().toFloat() * leafsGene.maxRotationOffset * 2f - leafGene.maxRotationOffset
         val dir = getDirectionVectorAlongBranch(branch.length, branch.rotation)
         branch.children.add(engine.entity {
             with<Position> {
@@ -162,11 +181,11 @@ class Tree() : EntitySystem() {
         })
     }
 
-    fun life(entity: Entity, delta: Float, energy: Float) {
-        // Ignore malformed entities
-        if (!branches.has(entity) || !positions.has(entity)) {
-            return
-        }
+    /**
+     * This function distributes the specified amount of energy across all entities.
+     * @param energy The amount of energy to distribute across the system.
+     */
+    fun life(energy: Float) {
         val branch = branches.get(entity);
         // Add the new energy to the branche's storage.
         branch.storage += energy;
@@ -196,9 +215,16 @@ class Tree() : EntitySystem() {
         branch.storage = Math.min(branch.storage, branch.maxStorage)
     }
 
-    fun adjust(entity: Entity, newPos: Vector2) {
+    /**
+     * After all branches changed size and rotations the branches need to be readjusted.
+     * This function recursively loops over all branches and fixes their positions after
+     * each tick's update.
+     */
+    fun adjust(entity: Entity, newPos?: Vector2) {
         val position = positions.get(entity)
-        position.position = newPos
+        if (newPos != null) {
+            position.position = newPos
+        }
         if (!branches.has(entity)) {
             return
         }
@@ -214,11 +240,12 @@ class Tree() : EntitySystem() {
         }
     }
 
-    override fun update(delta: Float) {
+    override fun updateInterval() {
         val rootPosition = positions.get(root)
         val currentRoot = root
         if (currentRoot != null) {
-            life(currentRoot, delta, delta * 10f);
+            life(2f);
+            adjust(currentRoot)
         }
     }
 }

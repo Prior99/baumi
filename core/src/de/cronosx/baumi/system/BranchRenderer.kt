@@ -14,7 +14,7 @@ import ktx.ashley.mapperFor
 import ktx.log.info
 
 class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
-        allOf(Branch::class, Position::class).get(), ZComparator()) {
+        allOf(Branch::class, Position::class).get(), GenerationComparator()) {
     val cBranch = mapperFor<Branch>()
     val cPosition = mapperFor<Position>()
     val branchTexture = Texture("dark-wood.png")
@@ -30,7 +30,7 @@ class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
         sprite.draw(batch)
     }
 
-    class ZComparator : Comparator<Entity> {
+    class GenerationComparator : Comparator<Entity> {
         val cBranch = mapperFor<Branch>()
 
         override fun compare(e1: Entity, e2: Entity): Int {

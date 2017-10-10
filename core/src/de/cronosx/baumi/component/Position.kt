@@ -6,5 +6,5 @@ import ktx.math.*
 import ktx.ashley.*
 
 class Position(
-        var position: Vector2 = vec2(0f, 0f)
+    var position: Vector2 = vec2(0f, 0f)
 ) : Component
