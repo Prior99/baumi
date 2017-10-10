@@ -12,8 +12,8 @@ import ktx.inject.Context
 import ktx.async.enableKtxCoroutines
 import de.cronosx.baumi.view.Game
 
-val appWidth = 135f
-val appHeight = 240f
+val appWidth = 1080f
+val appHeight = 1920f
 
 fun getScale() = Gdx.graphics.width.toFloat() / appWidth
 

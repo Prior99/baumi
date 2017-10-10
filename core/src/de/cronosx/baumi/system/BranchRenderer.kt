@@ -17,17 +17,30 @@ class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
         allOf(Branch::class, Position::class).get(), GenerationComparator()) {
     val cBranch = mapperFor<Branch>()
     val cPosition = mapperFor<Position>()
-    val branchTexture = Texture("dark-wood.png")
+    val branchTexture = Texture("branch.png")
+    val trunkTexture = Texture("trunk.png")
+    val energyTexture = Texture("energy.png")
+    var time = 0f
 
     override fun processEntity(entity: Entity, delta: Float) {
         val position = cPosition.get(entity).position
         val branch = cBranch.get(entity)
-        val sprite = Sprite(branchTexture)
+        val tex = if (branch.generation == 0) trunkTexture else branchTexture
+        val sprite = Sprite(tex)
         sprite.setScale(branch.length / branchTexture.width)
         sprite.setOrigin(0f, branchTexture.height / 2f)
         sprite.rotation = radiansToDegrees * branch.rotation
         sprite.setPosition(position.x, position.y)
         sprite.draw(batch)
+        val index = Math.floor((time / branch.length).toDouble() * 6.0).toInt() % 15
+        val region = TextureRegion(energyTexture, 0, 100 * index, 500, 100)
+        val energySprite = Sprite(region)
+        energySprite.setScale(branch.length / branchTexture.width)
+        energySprite.setOrigin(0f, branchTexture.height / 2f)
+        energySprite.rotation = radiansToDegrees * branch.rotation
+        energySprite.setPosition(position.x, position.y)
+        energySprite.draw(batch)
+        time += delta
     }
 
     class GenerationComparator : Comparator<Entity> {
