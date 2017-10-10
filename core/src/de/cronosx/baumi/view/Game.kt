@@ -22,7 +22,6 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val engine = PooledEngine()
 
     override fun show() {
-        engine.addSystem(SimpleRenderer(batch))
         engine.addSystem(Clouds(batch))
         engine.addSystem(Tree())
         engine.addSystem(BranchRenderer(batch))

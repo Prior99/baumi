@@ -45,6 +45,7 @@ class Tree() : IntervalSystem(1f) {
             with<Consumer> {
                 maxEnergy = defaultDna.energy.max
                 rate = defaultDna.energy.upkeep
+                priority = 1000f
             }
         }
     }
@@ -85,6 +86,7 @@ class Tree() : IntervalSystem(1f) {
             }
             with<Consumer> {
                 maxEnergy = parentConsumer.maxEnergy * parentGenetic.dna.energy.falloff
+                priority = parentConsumer.priority - 100f
             }
         }
     }
@@ -157,7 +159,7 @@ class Tree() : IntervalSystem(1f) {
         }
     }
 
-    fun growLeafs(entity: Entity, delta: Float) {
+    fun growLeafs(entity: Entity) {
         val branch = branches.get(entity)
         val leafsGene = genetics.get(entity).dna.leafs
         val parentBranch = positions.get(entity).position
@@ -186,34 +188,27 @@ class Tree() : IntervalSystem(1f) {
      * This function distributes the specified amount of energy across all entities.
      * @param contingent The amount of energy available to the system.
      */
-    fun life(contingent: Float) {
-        val branch = branches.get(entity)
-        // Add the new energy to the branche's storage.
-        branch.storage += energy
-        info { "Adding ${energy} energy to branch in gen ${branch.generation}." }
-        info { "     Storage before upkeep: ${branch.storage}." }
-        // Upkeeping.
-        branch.storage -= branch.dna.upKeep * delta
-        info { "     Storage after upkeep: ${branch.storage}." }
-        // If the branch ran out of energy while upkeeping itself, ...
-        if (branch.storage < 0) {
-            // ... impact the health.
-            branch.health += branch.storage
-            branch.storage = 0f
-            info { "Reducing health of branch in gen ${branch.generation} by ${branch.storage}" }
+    fun life(initialContingent: Float) {
+        val sortedEntities = engine.entities
+            .filter{ consumers.has(it) }
+            .sortedWith(compareBy{ consumers.get(it).priority })
+        var currentContingent = initialContingent
+        for (entity in sortedEntities) {
+            val consumer = consumers.get(entity)
+            // If the contingent is large enough to fullfill the consumer's needs, reduce the contingent and continue.
+            if (currentContingent + consumer.energy > consumer.rate) {
+                val contingentPart = minOf(consumer.rate, currentContingent)
+                currentContingent -= contingentPart
+                consumer.energy -= consumer.rate - contingentPart
+                continue
+            }
+            // If not and the consumer has a health component, impact it.
+            if (healths.has(entity)) {
+                val loss = consumer.rate - maxOf(currentContingent, 0f)
+                info { "Reducing health of entity by ${loss}." }
+                healths.get(entity).current -= loss
+            }
         }
-        // Don't iterate dead branches.
-        if (branch.dead()) {
-            return
-        }
-        // Make sure nobody dies.
-        upKeepChildren(entity, delta)
-        while (branch.storage > branch.maxStorage) {
-            growNewBranches(entity, delta)
-            growLength(entity, delta)
-            growLeafs(entity, delta) // Not yet ported to energy system.
-        }
-        branch.storage = Math.min(branch.storage, branch.maxStorage)
     }
 
     /**
@@ -221,7 +216,7 @@ class Tree() : IntervalSystem(1f) {
      * This function recursively loops over all branches and fixes their positions after
      * each tick's update.
      */
-    fun adjust(entity: Entity, newPos: Vector2) {
+    fun adjust(entity: Entity? = root, newPos: Vector2? = null) {
         val position = positions.get(entity)
         if (newPos != null) {
             position.position = newPos
@@ -242,11 +237,7 @@ class Tree() : IntervalSystem(1f) {
     }
 
     override fun updateInterval() {
-        val rootPosition = positions.get(root)
-        val currentRoot = root
-        if (currentRoot != null) {
-            life(2f);
-            adjust(currentRoot)
-        }
+        life(2f)
+        adjust()
     }
 }
