@@ -20,6 +20,6 @@ build-android:
 build-desktop:
 	./gradlew desktop:dist
 
-@PHONEY: clean
+@PHONY: clean
 clean:
 	./gradlew clean
