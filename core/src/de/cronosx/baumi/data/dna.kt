@@ -9,7 +9,8 @@ data class GeneLeafs (
     val maxFalloff: Int,
     val maxRotationOffset: Float,
     val upkeep: Float,
-    val leafCost: Float
+    val leafCost: Float,
+    val maxEnergy: Float
 )
 
 data class GeneLength (
@@ -58,12 +59,13 @@ val defaultDna = DNA(
         maxFalloff = -1,
         maxRotationOffset = 0.2f,
         upkeep = 0.01f,
-        leafCost = 1f
+        leafCost = 1f,
+        maxEnergy = 0.1f
     ),
     length = GeneLength(
         growthSpeed = 0.1f,
-        max= 50f,
-        initial= 10f,
+        max = 400f,
+        initial = 100f,
         falloff = 0.6f,
         growCost = 1f
     ),

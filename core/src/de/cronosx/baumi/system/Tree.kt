@@ -13,7 +13,7 @@ import ktx.math.plus
 import ktx.math.vec2
 import ktx.log.*
 
-class Tree() : IntervalSystem(0.1f) {
+class Tree() : IntervalSystem(0.01f) {
     val branches = mapperFor<Branch>()
     val genetics = mapperFor<Genetic>()
     val healths = mapperFor<Health>()
@@ -79,6 +79,7 @@ class Tree() : IntervalSystem(0.1f) {
             with<Consumer> {
                 maxEnergy = parentConsumer.maxEnergy * parentGenetic.dna.energy.falloff
                 priority = parentConsumer.priority - 100f
+                rate = parentConsumer.rate * parentGenetic.dna.energy.falloff
             }
         }
     }
@@ -122,19 +123,25 @@ class Tree() : IntervalSystem(0.1f) {
     fun growLeaf(entity: Entity) {
         val branch = branches.get(entity)
         val leafsGene = genetics.get(entity).dna.leafs
-        val parentBranch = positions.get(entity).position
+        val parentConsumer = consumers.get(entity)
+        val parentPosition = positions.get(entity).position
 
         val randomPositionAlongBranch = Math.random().toFloat()
         val rotationOffset = Math.random().toFloat() * leafsGene.maxRotationOffset * 2f - leafsGene.maxRotationOffset
         val dir = getDirectionVectorAlongBranch(branch.length, branch.rotation)
         branch.children.add(engine.entity {
             with<Position> {
-                position = dir.cpy().scl(randomPositionAlongBranch) + parentBranch
+                position = dir.cpy().scl(randomPositionAlongBranch) + parentPosition
             }
             with<Leaf> {
                 generation = branch.generation + 1
                 rotation = branch.rotation + rotationOffset * Math.PI.toFloat()
                 positionAlongBranch = randomPositionAlongBranch
+            }
+            with<Consumer> {
+                maxEnergy = leafsGene.maxEnergy
+                priority = parentConsumer.priority - 1000f
+                rate = leafsGene.upkeep
             }
         })
     }
@@ -145,7 +152,7 @@ class Tree() : IntervalSystem(0.1f) {
      */
     fun life(initialContingent: Float) {
         info {
-            "Calculating lifecycle ${tick} with contingent of ${initialContingent}" +
+            "Calculating tick ${tick} with contingent of ${initialContingent}" +
             " for ${engine.entities.count()} entities:"
         }
         val sortedEntities = engine.entities
@@ -194,7 +201,16 @@ class Tree() : IntervalSystem(0.1f) {
             }
             val branch = branches.get(entity)
             val dna = genetics.get(entity).dna
-            // 3.1. Branching
+            // 3.1. Growing leafs
+            val canGrowLeaf =
+                branch.children.filter{ leafs.has(it) }.count() < branch.maxLeafs &&
+                currentContingent >= dna.leafs.leafCost
+            if (canGrowLeaf) {
+                info { "Growing a leaf." }
+                growLeaf(entity)
+                currentContingent -= dna.leafs.leafCost
+            }
+            // 3.2. Branching
             val canGrowBranches = branch.children.filter{ branches.has(it) }.count() == 0 &&
                 branch.length > dna.branching.minLength * branch.maxLength &&
                 branch.generation < dna.branching.maxDepth &&
@@ -204,22 +220,13 @@ class Tree() : IntervalSystem(0.1f) {
                 growBranches(entity)
                 currentContingent -= dna.branching.branchCost
             }
-            // 3.2. Growing length
+            // 3.3. Growing length
             val canGrowLength = branch.length < branch.maxLength &&
                 currentContingent >= dna.length.growCost
             if (canGrowLength) {
                 info { "Growing length." }
                 growLength(entity)
                 currentContingent -= dna.length.growCost
-            }
-            // 3.3. Growing leafs
-            val canGrowLeaf =
-                branch.children.filter{ leafs.has(it) }.count() < branch.maxLeafs &&
-                currentContingent >= dna.leafs.leafCost
-            if (canGrowLeaf) {
-                info { "Growing a leaf." }
-                growLeaf(entity)
-                currentContingent -= dna.leafs.leafCost
             }
         }
         if (currentContingent > 0) {
@@ -254,7 +261,7 @@ class Tree() : IntervalSystem(0.1f) {
 
     override fun updateInterval() {
         tick++
-        life(3f)
+        life(10f)
         adjust()
     }
 }
