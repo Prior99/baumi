@@ -12,6 +12,7 @@ import ktx.ashley.mapperFor
 import ktx.math.plus
 import ktx.math.vec2
 import ktx.log.*
+import kotlin.system.measureTimeMillis
 
 class Tree() : IntervalSystem(0.01f) {
     val branches = mapperFor<Branch>()
@@ -34,7 +35,6 @@ class Tree() : IntervalSystem(0.01f) {
                 length = defaultDna.length.initial
                 maxLength = defaultDna.length.max
                 children = ArrayList()
-                maxLeafs = defaultDna.leafs.initialMax
             }
             with<Genetic> {
                 dna = defaultDna
@@ -67,7 +67,6 @@ class Tree() : IntervalSystem(0.01f) {
                 maxLength = newMaxLength
                 generation = parentBranch.generation + 1
                 children = ArrayList()
-                maxLeafs = parentBranch.maxLeafs - parentGenetic.dna.leafs.maxFalloff
             }
             with<Genetic> {
                 dna = parentGenetic.dna
@@ -143,6 +142,10 @@ class Tree() : IntervalSystem(0.01f) {
                 priority = parentConsumer.priority - 1000f
                 rate = leafsGene.upkeep
             }
+            with<Health> {
+                current = leafsGene.maxHealth
+                max = leafsGene.maxHealth
+            }
         })
     }
 
@@ -157,17 +160,35 @@ class Tree() : IntervalSystem(0.01f) {
         branch.children.forEach{ killRecursively(it) }
     }
 
+    fun getMaxGeneration(entity: Entity): Int {
+        if (!branches.has(entity)) {
+            return 0
+        }
+        val branch = branches.get(entity)
+        return maxOf(branch.children.map{ getMaxGeneration(it) }.max() ?: 0, branch.generation)
+    }
+
+    fun maxLeafCount(entity: Entity): Int {
+        val branch = branches.get(entity)
+        val dna = genetics.get(entity).dna
+        val relativeDepth = getMaxGeneration(entity) - branch.generation
+        return Math.floor(Math.pow(dna.leafs.leafCountFalloff.toDouble(), relativeDepth.toDouble()) *
+            dna.leafs.maxGenerationLeafCountPerLength * branch.length).toInt()
+    }
+
     /**
      * This function distributes the specified amount of energy across all entities.
      * @param contingent The amount of energy available to the system.
+     * @return The amount of energy consumed.
      */
-    fun life(initialContingent: Float) {
+    fun life(initialContingent: Float): Float {
         info {
             "Calculating tick ${tick} with contingent of ${initialContingent}" +
             " for ${engine.entities.count()} entities:"
         }
         val sortedEntities = engine.entities
             .filter{ consumers.has(it) }
+            .filter{ !healths.has(it) || !healths.get(it).dead }
             .sortedWith(compareBy{ -consumers.get(it).priority })
         var currentContingent = initialContingent
         // 1. Make sure nobody dies.
@@ -195,7 +216,7 @@ class Tree() : IntervalSystem(0.01f) {
         }
         if (currentContingent <= 0) {
             info { "    => Contingent depleted after upkeep." }
-            return;
+            return initialContingent - currentContingent;
         }
         // 2. Fill buffers.
         for (entity in sortedEntities) {
@@ -209,7 +230,7 @@ class Tree() : IntervalSystem(0.01f) {
         }
         if (currentContingent <= 0) {
             info { "    => Contingent depleted after filling energy storages." }
-            return;
+            return initialContingent - currentContingent;
         }
         // 3. Handle branches
         for (entity in sortedEntities) {
@@ -220,7 +241,7 @@ class Tree() : IntervalSystem(0.01f) {
             val dna = genetics.get(entity).dna
             // 3.1. Growing leafs
             val canGrowLeaf =
-                branch.children.filter{ leafs.has(it) }.count() < branch.maxLeafs &&
+                branch.children.filter{ leafs.has(it) }.count() < maxLeafCount(entity) &&
                 currentContingent >= dna.leafs.leafCost
             if (canGrowLeaf) {
                 info { "Growing a leaf." }
@@ -246,9 +267,27 @@ class Tree() : IntervalSystem(0.01f) {
                 currentContingent -= dna.length.growCost
             }
         }
+        // 4. Kill obsolete leafs
+        for (entity in sortedEntities) {
+            if (!branches.has(entity)) {
+                continue
+            }
+            val branch = branches.get(entity)
+            val livingLeafs = branch.children
+                .filter{ leafs.has(it) && healths.has(it) }
+                .filter{ !healths.get(it).dead }
+            val maxLeafs = maxLeafCount(entity)
+            if (livingLeafs.count() <= maxLeafs) {
+                continue
+            }
+            for (i in 0..maxLeafs) {
+                killRecursively(livingLeafs[i])
+            }
+        }
         if (currentContingent > 0) {
             info { "    => Contingent was not depleted. Contingent of ${currentContingent} left." }
         }
+        return initialContingent - currentContingent
     }
 
     /**
@@ -277,8 +316,11 @@ class Tree() : IntervalSystem(0.01f) {
     }
 
     override fun updateInterval() {
-        tick++
-        life(10f)
-        adjust()
+        val time = measureTimeMillis {
+            tick++
+            life(10f)
+            adjust()
+        }
+        info { "    Tick took ${time}ms." }
     }
 }

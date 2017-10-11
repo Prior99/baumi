@@ -7,21 +7,25 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.TextureRegion
-import de.cronosx.baumi.component.Leaf
-import de.cronosx.baumi.component.Position
+import de.cronosx.baumi.component.*
 import ktx.ashley.allOf
 import ktx.ashley.mapperFor
 import ktx.log.info
 
 class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
         allOf(Leaf::class, Position::class).get(), ZComparator()) {
-    val cLeaf = mapperFor<Leaf>()
-    val cPosition = mapperFor<Position>()
+    val leafs = mapperFor<Leaf>()
+    val positions = mapperFor<Position>()
+    val healths = mapperFor<Health>()
     val leafTexture = Texture("leaf.png")
 
     override fun processEntity(entity: Entity, delta: Float) {
-        val position = cPosition.get(entity).position
-        val leaf = cLeaf.get(entity)
+        val position = positions.get(entity).position
+        val leaf = leafs.get(entity)
+        val dead = healths.get(entity).dead
+        if (dead) {
+            return
+        }
         val sprite = Sprite(leafTexture)
         sprite.setOrigin(0f, leafTexture.height / 2f)
         sprite.rotation = radiansToDegrees * leaf.rotation
@@ -31,10 +35,10 @@ class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
     }
 
     class ZComparator : Comparator<Entity> {
-        val cLeaf = mapperFor<Leaf>()
+        val leafs = mapperFor<Leaf>()
 
         override fun compare(e1: Entity, e2: Entity): Int {
-            return cLeaf.get(e1).generation - cLeaf.get(e2).generation;
+            return leafs.get(e1).generation - leafs.get(e2).generation;
         }
     }
 }
