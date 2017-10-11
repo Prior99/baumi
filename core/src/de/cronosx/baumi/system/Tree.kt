@@ -67,8 +67,9 @@ class Tree() : IntervalSystem(0.01f) {
         val parentConsumer = consumers.get(parent)
 
         val newMaxLength =
-            parentGenetic.dna.length.falloff * parentBranch.maxLength +
-            lerp(-0.1f, 0.1f, Math.random().toFloat())
+            parentGenetic.dna.length.falloff * 
+            parentBranch.maxLength *
+            lerp(0.9f, 1.1f, Math.random().toFloat())
 
         val newBranch = engine.entity {
             with<Position> {} // Will be adjusted anyway.
@@ -86,9 +87,9 @@ class Tree() : IntervalSystem(0.01f) {
                 current = max
             }
             with<Consumer> {
-                maxEnergy = parentConsumer.maxEnergy * parentGenetic.dna.energy.falloff
+                maxEnergy = parentConsumer.maxEnergy * parentGenetic.dna.energy.falloff * lerp(0.9f, 1.1f, Math.random().toFloat())
                 priority = parentConsumer.priority - 100f
-                rate = parentConsumer.rate * parentGenetic.dna.energy.falloff
+                rate = parentConsumer.rate * parentGenetic.dna.energy.falloff * lerp(0.9f, 1.1f, Math.random().toFloat())
             }
         }
 
@@ -186,63 +187,55 @@ class Tree() : IntervalSystem(0.01f) {
      * @param contingent The amount of energy available to the system.
      * @return The amount of energy consumed.
      */
-    fun life(): Float {
-        val producerEntities = engine.entities.filter { producers.has(it) }
-        val initialContingent = producerEntities.sumByDouble({ producers.get(it).rate.toDouble() }).toFloat()
+    fun life() {
+        // Of course, we only care about living entities in the life() function :)
+        val livingEntities =  engine.entities
+            .filter { !healths.has(it) || healths.get(it).alive }
 
+        val producerEntities = livingEntities.filter { producers.has(it) }
+        val consumerEntities = livingEntities.filter { consumers.has(it) }
+
+        // Find out how much production and consumption we have
+
+        val totalProduction = producerEntities
+            .sumByDouble({ producers.get(it).rate.toDouble() }).toFloat()
+
+        val totalConsumption = consumerEntities
+            .sumByDouble({ consumers.get(it).rate.toDouble() }).toFloat()
+
+        val efficiency = totalProduction / totalConsumption
+
+        val efficiencyString = "%.1f %%".format(efficiency * 100)
         info {
-            "Calculating tick $tick with contingent of $initialContingent" +
+            "Calculating tick $tick: Production $totalProduction, Consumption $totalConsumption, Efficiency $efficiencyString" +
             " for ${engine.entities.count()} entities:"
         }
-        val sortedEntities = engine.entities
-            .filter { consumers.has(it) }
-            .filter { !healths.has(it) || healths.get(it).alive }
-            .sortedWith(compareBy { -consumers.get(it).priority })
-        var currentContingent = initialContingent
 
-        // 1. Make sure nobody dies.
-        for (entity in sortedEntities) {
+        // Give everybody
+        var currentContingent  = 0f
+        for (entity in consumerEntities) {
             val consumer = consumers.get(entity)
-            // If the contingent is large enough to fullfill the consumer's needs, reduce the contingent and continue.
-            if (currentContingent + consumer.energy > consumer.rate) {
-                // Find out how much to take from the contingent and add it to the consumer:
-                // cannot be more than the rate or the remaining contingent
-                val contingentPart = minOf(consumer.rate, currentContingent)
+            // Add the requested amount according to global efficiency, but
+            // always subtract the full rate too.
+            consumer.energy += consumer.rate * (efficiency - 1)
 
-                // Remove contingent from remainder, add to consumer, and 
-                // also remove energy from the consumer at its consumption rate
-                currentContingent -= contingentPart
-                consumer.energy += contingentPart - consumer.rate
-            } else if (healths.has(entity)) {
-                // If the energy was not enough and the consumer has a health
-                // component, impact it.
-                val loss = consumer.rate - maxOf(currentContingent, 0f)
+            if (consumer.energy > consumer.maxEnergy) {
+                currentContingent += consumer.energy - consumer.maxEnergy
+                consumer.energy = consumer.maxEnergy
+            } else if(consumer.energy < consumer.minEnergy && healths.has(entity)) {
+                // If the energy sank below the minimum and the entity has
+                // health, impact it.  The rate of health loss is proportional
+                // to the amount of energy missing below the minimum energy 
+                val lossRate = 1 - consumer.energy / consumer.minEnergy 
+                val loss = lossRate * 0.1f
                 info { "    Reducing health of entity by $loss." }
                 val health = healths.get(entity)
                 health.current -= loss
             }
         }
-        if (currentContingent <= 0) {
-            info { "    => Contingent depleted after upkeep." }
-            return initialContingent - currentContingent
-        }
 
-        // 2. Fill buffers.
-        for (entity in sortedEntities) {
-            val consumer = consumers.get(entity)
-            val energyGain = minOf(currentContingent, consumer.remainingBufferCapacity)
-            if (energyGain > 0) {
-                info { "    Increasing buffer from ${consumer.energy} to ${consumer.energy + energyGain}." }
-            }
-            currentContingent -= energyGain
-            consumer.energy += energyGain
-        }
-        if (currentContingent <= 0) {
-            info { "    => Contingent depleted after filling energy storages." }
-            return initialContingent - currentContingent
-        }
         // 3. Handle branches
-        for (entity in sortedEntities) {
+        for (entity in consumerEntities) {
             if (!branches.has(entity) || !genetics.has(entity)) {
                 continue
             }
@@ -277,7 +270,7 @@ class Tree() : IntervalSystem(0.01f) {
             }
         }
         // 4. Kill obsolete leafs
-        for (entity in sortedEntities) {
+        for (entity in consumerEntities) {
             if (!branches.has(entity)) {
                 continue
             }
@@ -294,7 +287,6 @@ class Tree() : IntervalSystem(0.01f) {
         if (currentContingent > 0) {
             info { "    => Contingent was not depleted. Contingent of $currentContingent left." }
         }
-        return initialContingent - currentContingent
     }
 
     /**
