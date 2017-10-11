@@ -53,6 +53,9 @@ class Tree() : IntervalSystem(0.01f) {
                 rate = defaultDna.energy.upkeep
                 priority = 1000f
             }
+            with<Producer> {
+                rate = 10f
+            }
         }
     }
 
