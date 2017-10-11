@@ -20,16 +20,16 @@ class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
     override fun processEntity(entity: Entity, delta: Float) {
         val position = positions.get(entity).position
         val leaf = leafs.get(entity)
-        val dead = healths.get(entity).dead
-        if (dead) {
-            return
+        val health = healths.get(entity)
+
+        if (health.alive) {
+            val sprite = Sprite(leafTexture)
+            sprite.setOrigin(0f, leafTexture.height / 2f)
+            sprite.rotation = radiansToDegrees * leaf.rotation
+            sprite.setPosition(position.x, position.y + leafTexture.height / 2f - 10)
+            sprite.setScale(0.3f)
+            sprite.draw(batch)
         }
-        val sprite = Sprite(leafTexture)
-        sprite.setOrigin(0f, leafTexture.height / 2f)
-        sprite.rotation = radiansToDegrees * leaf.rotation
-        sprite.setPosition(position.x, position.y + leafTexture.height / 2f - 10)
-        sprite.setScale(0.3f)
-        sprite.draw(batch)
     }
 
     class ZComparator : Comparator<Entity> {

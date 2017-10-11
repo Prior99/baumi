@@ -149,16 +149,6 @@ class Tree() : IntervalSystem(0.01f) {
         })
     }
 
-    fun killRecursively(entity: Entity) {
-        info { "Killing entity." }
-        val health = healths.get(entity)
-        health.current = 0f
-        if (!branches.has(entity)) {
-            return
-        }
-        val branch = branches.get(entity)
-        branch.children.forEach { killRecursively(it) }
-    }
 
     fun getMaxGeneration(entity: Entity): Int {
         if (!branches.has(entity)) {
@@ -188,7 +178,7 @@ class Tree() : IntervalSystem(0.01f) {
         }
         val sortedEntities = engine.entities
             .filter { consumers.has(it) }
-            .filter { !healths.has(it) || !healths.get(it).dead }
+            .filter { !healths.has(it) || healths.get(it).alive }
             .sortedWith(compareBy { -consumers.get(it).priority })
         var currentContingent = initialContingent
         // 1. Make sure nobody dies.
@@ -207,11 +197,6 @@ class Tree() : IntervalSystem(0.01f) {
                 info { "    Reducing health of entity by $loss." }
                 val health = healths.get(entity)
                 health.current -= loss
-                if (health.current <= 0f) {
-                    if (branches.has(entity)) {
-                        killRecursively(entity)
-                    }
-                }
             }
         }
         if (currentContingent <= 0) {
@@ -273,15 +258,13 @@ class Tree() : IntervalSystem(0.01f) {
                 continue
             }
             val branch = branches.get(entity)
-            val livingLeafs = branch.children
-                .filter { leafs.has(it) && healths.has(it) }
-                .filter { !healths.get(it).dead }
+            val livingLeafs = branch.children.filter { leafs.has(it) && healths.has(it) && healths.get(it).alive }
             val maxLeafs = maxLeafCount(entity)
             if (livingLeafs.count() <= maxLeafs) {
                 continue
             }
             for (i in 0..maxLeafs) {
-                killRecursively(livingLeafs[i])
+                healths.get(livingLeafs[i]).kill()
             }
         }
         if (currentContingent > 0) {

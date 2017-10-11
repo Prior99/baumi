@@ -8,7 +8,11 @@ class Health(
     var max: Float = 0f,
     var current: Float = 0f
 ) : Component {
-    val dead: Boolean
-        get() = current <= 0
+    val alive: Boolean
+        get() = current > 0f
+
+    fun kill() {
+        current = 0f
+    }
 }
 
