@@ -202,13 +202,17 @@ class Tree() : IntervalSystem(0.01f) {
             val consumer = consumers.get(entity)
             // If the contingent is large enough to fullfill the consumer's needs, reduce the contingent and continue.
             if (currentContingent + consumer.energy > consumer.rate) {
+                // Find out how much to take from the contingent and add it to the consumer:
+                // cannot be more than the rate or the remaining contingent
                 val contingentPart = minOf(consumer.rate, currentContingent)
+
+                // Remove contingent from remainder, add to consumer, and 
+                // also remove energy from the consumer at its consumption rate
                 currentContingent -= contingentPart
-                consumer.energy -= consumer.rate - contingentPart
-                continue
-            }
-            // If not and the consumer has a health component, impact it.
-            if (healths.has(entity)) {
+                consumer.energy += contingentPart - consumer.rate
+            } else if (healths.has(entity)) {
+                // If the energy was not enough and the consumer has a health
+                // component, impact it.
                 val loss = consumer.rate - maxOf(currentContingent, 0f)
                 info { "    Reducing health of entity by $loss." }
                 val health = healths.get(entity)
