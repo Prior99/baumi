@@ -14,6 +14,10 @@ import ktx.math.vec2
 import ktx.log.*
 import kotlin.system.measureTimeMillis
 
+fun lerp(a: Float, b: Float, f: Float): Float {
+    return a + (b - a) * f
+}
+
 class Tree() : IntervalSystem(0.01f) {
     val branches = mapperFor<Branch>()
     val genetics = mapperFor<Genetic>()
@@ -51,7 +55,8 @@ class Tree() : IntervalSystem(0.01f) {
         }
     }
 
-    fun createBranch(parent: Entity, rotationOffset: Float): Entity {
+    fun createBranch(parent: Entity, rotationOffsetFixed: Float, rotationOffsetSpread: Float): Entity {
+        val rotationOffset = rotationOffsetFixed + lerp(-rotationOffsetSpread, rotationOffsetSpread, Math.random().toFloat())
         val parentBranch = branches.get(parent)
         val parentGenetic = genetics.get(parent)
         val parentHealth = healths.get(parent)
@@ -59,8 +64,9 @@ class Tree() : IntervalSystem(0.01f) {
 
         val newMaxLength =
             parentGenetic.dna.length.falloff * parentBranch.maxLength +
-            Math.random().toFloat() * 0.2f - 0.1f
-        return engine.entity {
+            lerp(-0.1f, 0.1f, Math.random().toFloat())
+
+        val newBranch = engine.entity {
             with<Position> {} // Will be adjusted anyway.
             with<Branch> {
                 rotation = parentBranch.rotation + rotationOffset
@@ -81,6 +87,9 @@ class Tree() : IntervalSystem(0.01f) {
                 rate = parentConsumer.rate * parentGenetic.dna.energy.falloff
             }
         }
+
+        parentBranch.children.add(newBranch)
+        return newBranch
     }
 
     fun getDirectionVectorAlongBranch(length: Float, rotation: Float): Vector2 {
@@ -100,16 +109,18 @@ class Tree() : IntervalSystem(0.01f) {
         val parentBranch = branches.get(parent)
         val parentGenetic = genetics.get(parent)
 
-        val rightAngle = 0.1f + Math.random().toFloat() * 0.2f
-        val leftAngle = 0.1f + Math.random().toFloat() * 0.2f
-        val right = createBranch(parent, Math.PI.toFloat() * rightAngle)
-        val left = createBranch(parent, -Math.PI.toFloat() * leftAngle)
-        parentBranch.children.add(left)
-        parentBranch.children.add(right)
+        val pi = Math.PI.toFloat()
+
+        // create left branch
+        createBranch(parent, -0.2f, 0.1f * pi)
+
+        // create right branch
+        createBranch(parent, 0.2f, 0.1f * pi)
+
+        // Sometimes, we also want to create a third branch in the middle. This is determined
+        // by the `tripleProbability`.
         if (Math.random() < parentGenetic.dna.branching.tripleProbability) {
-            val centerAngle = Math.random().toFloat() * 0.05f
-            val center = createBranch(parent, Math.PI.toFloat() * centerAngle)
-            parentBranch.children.add(center)
+            createBranch(parent, 0f, 0.025f * pi)
         }
     }
 
