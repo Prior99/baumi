@@ -6,11 +6,9 @@ import com.badlogic.gdx.math.MathUtils.radiansToDegrees
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.Sprite
-import com.badlogic.gdx.graphics.g2d.TextureRegion
 import de.cronosx.baumi.component.*
 import ktx.ashley.allOf
 import ktx.ashley.mapperFor
-import ktx.log.info
 
 class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
         allOf(Leaf::class, Position::class).get(), ZComparator()) {
@@ -38,7 +36,7 @@ class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
         val leafs = mapperFor<Leaf>()
 
         override fun compare(e1: Entity, e2: Entity): Int {
-            return leafs.get(e1).generation - leafs.get(e2).generation;
+            return leafs.get(e1).generation - leafs.get(e2).generation
         }
     }
 }

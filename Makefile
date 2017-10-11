@@ -4,6 +4,10 @@ all: build-android build-desktop
 
 run: run-desktop
 
+@PHONY: lint
+lint: 
+	ktlint core/src/**/*.kt
+
 @PHONY: run-android
 run-android:
 	./gradlew android:installDebug android:run

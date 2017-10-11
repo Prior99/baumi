@@ -26,8 +26,8 @@ class Tree() : IntervalSystem(0.01f) {
     var tick = 0
 
     override fun addedToEngine(engine: Engine) {
-        root = engine.entity{
-            with<Position>{
+        root = engine.entity {
+            with<Position> {
                 position = vec2(appWidth/ 2f, 320f)
             }
             with<Branch> {
@@ -157,7 +157,7 @@ class Tree() : IntervalSystem(0.01f) {
             return
         }
         val branch = branches.get(entity)
-        branch.children.forEach{ killRecursively(it) }
+        branch.children.forEach { killRecursively(it) }
     }
 
     fun getMaxGeneration(entity: Entity): Int {
@@ -165,7 +165,7 @@ class Tree() : IntervalSystem(0.01f) {
             return 0
         }
         val branch = branches.get(entity)
-        return maxOf(branch.children.map{ getMaxGeneration(it) }.max() ?: 0, branch.generation)
+        return maxOf(branch.children.map { getMaxGeneration(it) }.max() ?: 0, branch.generation)
     }
 
     fun maxLeafCount(entity: Entity): Int {
@@ -183,13 +183,13 @@ class Tree() : IntervalSystem(0.01f) {
      */
     fun life(initialContingent: Float): Float {
         info {
-            "Calculating tick ${tick} with contingent of ${initialContingent}" +
+            "Calculating tick $tick with contingent of $initialContingent" +
             " for ${engine.entities.count()} entities:"
         }
         val sortedEntities = engine.entities
-            .filter{ consumers.has(it) }
-            .filter{ !healths.has(it) || !healths.get(it).dead }
-            .sortedWith(compareBy{ -consumers.get(it).priority })
+            .filter { consumers.has(it) }
+            .filter { !healths.has(it) || !healths.get(it).dead }
+            .sortedWith(compareBy { -consumers.get(it).priority })
         var currentContingent = initialContingent
         // 1. Make sure nobody dies.
         for (entity in sortedEntities) {
@@ -204,7 +204,7 @@ class Tree() : IntervalSystem(0.01f) {
             // If not and the consumer has a health component, impact it.
             if (healths.has(entity)) {
                 val loss = consumer.rate - maxOf(currentContingent, 0f)
-                info { "    Reducing health of entity by ${loss}." }
+                info { "    Reducing health of entity by $loss." }
                 val health = healths.get(entity)
                 health.current -= loss
                 if (health.current <= 0f) {
@@ -216,21 +216,21 @@ class Tree() : IntervalSystem(0.01f) {
         }
         if (currentContingent <= 0) {
             info { "    => Contingent depleted after upkeep." }
-            return initialContingent - currentContingent;
+            return initialContingent - currentContingent
         }
         // 2. Fill buffers.
         for (entity in sortedEntities) {
             val consumer = consumers.get(entity)
             val energyGain = minOf(currentContingent, consumer.remainingBufferCapacity)
             if (energyGain > 0) {
-                info { "    Increasing buffer from ${consumer.energy} to ${consumer.energy + energyGain}."}
+                info { "    Increasing buffer from ${consumer.energy} to ${consumer.energy + energyGain}." }
             }
             currentContingent -= energyGain
             consumer.energy += energyGain
         }
         if (currentContingent <= 0) {
             info { "    => Contingent depleted after filling energy storages." }
-            return initialContingent - currentContingent;
+            return initialContingent - currentContingent
         }
         // 3. Handle branches
         for (entity in sortedEntities) {
@@ -241,7 +241,7 @@ class Tree() : IntervalSystem(0.01f) {
             val dna = genetics.get(entity).dna
             // 3.1. Growing leafs
             val canGrowLeaf =
-                branch.children.filter{ leafs.has(it) }.count() < maxLeafCount(entity) &&
+                branch.children.filter { leafs.has(it) }.count() < maxLeafCount(entity) &&
                 currentContingent >= dna.leafs.leafCost
             if (canGrowLeaf) {
                 info { "Growing a leaf." }
@@ -249,7 +249,7 @@ class Tree() : IntervalSystem(0.01f) {
                 currentContingent -= dna.leafs.leafCost
             }
             // 3.2. Branching
-            val canGrowBranches = branch.children.filter{ branches.has(it) }.count() == 0 &&
+            val canGrowBranches = branch.children.filter { branches.has(it) }.count() == 0 &&
                 branch.length > dna.branching.minLength * branch.maxLength &&
                 branch.generation < dna.branching.maxDepth &&
                 currentContingent >= dna.branching.branchCost
@@ -274,8 +274,8 @@ class Tree() : IntervalSystem(0.01f) {
             }
             val branch = branches.get(entity)
             val livingLeafs = branch.children
-                .filter{ leafs.has(it) && healths.has(it) }
-                .filter{ !healths.get(it).dead }
+                .filter { leafs.has(it) && healths.has(it) }
+                .filter { !healths.get(it).dead }
             val maxLeafs = maxLeafCount(entity)
             if (livingLeafs.count() <= maxLeafs) {
                 continue
@@ -285,7 +285,7 @@ class Tree() : IntervalSystem(0.01f) {
             }
         }
         if (currentContingent > 0) {
-            info { "    => Contingent was not depleted. Contingent of ${currentContingent} left." }
+            info { "    => Contingent was not depleted. Contingent of $currentContingent left." }
         }
         return initialContingent - currentContingent
     }

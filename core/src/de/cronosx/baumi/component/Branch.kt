@@ -10,5 +10,4 @@ class Branch(
     var maxLength: Float = 0f,
     var generation: Int = 0,
     var children: MutableList<Entity> = ArrayList()
-) : Component {
-}
+) : Component
