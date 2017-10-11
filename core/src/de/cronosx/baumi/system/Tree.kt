@@ -25,6 +25,7 @@ class Tree() : IntervalSystem(0.01f) {
     val consumers = mapperFor<Consumer>()
     val leafs = mapperFor<Leaf>()
     val positions = mapperFor<Position>()
+    val producers = mapperFor<Producer>()
 
     var root: Entity? = null
     var tick = 0
@@ -182,7 +183,10 @@ class Tree() : IntervalSystem(0.01f) {
      * @param contingent The amount of energy available to the system.
      * @return The amount of energy consumed.
      */
-    fun life(initialContingent: Float): Float {
+    fun life(): Float {
+        val producerEntities = engine.entities.filter { producers.has(it) }
+        val initialContingent = producerEntities.sumByDouble({ producers.get(it).rate.toDouble() }).toFloat()
+
         info {
             "Calculating tick $tick with contingent of $initialContingent" +
             " for ${engine.entities.count()} entities:"
@@ -192,6 +196,7 @@ class Tree() : IntervalSystem(0.01f) {
             .filter { !healths.has(it) || healths.get(it).alive }
             .sortedWith(compareBy { -consumers.get(it).priority })
         var currentContingent = initialContingent
+
         // 1. Make sure nobody dies.
         for (entity in sortedEntities) {
             val consumer = consumers.get(entity)
@@ -214,6 +219,7 @@ class Tree() : IntervalSystem(0.01f) {
             info { "    => Contingent depleted after upkeep." }
             return initialContingent - currentContingent
         }
+
         // 2. Fill buffers.
         for (entity in sortedEntities) {
             val consumer = consumers.get(entity)
@@ -312,7 +318,7 @@ class Tree() : IntervalSystem(0.01f) {
     override fun updateInterval() {
         val time = measureTimeMillis {
             tick++
-            life(10f)
+            life()
             adjust()
         }
         info { "    Tick took ${time}ms." }
