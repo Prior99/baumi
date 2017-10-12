@@ -60,7 +60,8 @@ class Ticker() : IntervalSystem(0.01f) {
             }
         }
         subSystems = listOf(
-            Death(engine)
+            Death(engine),
+            Aging(engine)
         )
     }
 
@@ -165,6 +166,7 @@ class Ticker() : IntervalSystem(0.01f) {
                 current = leafsGene.maxHealth
                 max = leafsGene.maxHealth
             }
+            with<Age>{}
         })
     }
 

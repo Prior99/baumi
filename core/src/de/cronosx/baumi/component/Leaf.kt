@@ -8,4 +8,3 @@ class Leaf(
     var generation: Int = 0,
     var positionAlongBranch: Float = 1f
 ) : Component
-
