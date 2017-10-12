@@ -15,8 +15,6 @@ import de.cronosx.baumi.view.Game
 val appWidth = 1080f
 val appHeight = 1920f
 
-fun getScale() = Gdx.graphics.width.toFloat() / appWidth
-
 class Application : KtxGame<Screen>() {
     val context = Context()
 
