@@ -124,8 +124,6 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
      * Handles the growth of branches for a specific entity.
      */
     fun growBranches(parent: Entity) {
-        val parentPosition = positions.get(parent)
-        val parentBranch = branches.get(parent)
         val branchingGene = genetics.get(parent).dna.branching
 
         val pi = Math.PI.toFloat()
@@ -157,7 +155,6 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
     fun growLeaf(entity: Entity) {
         val branch = branches.get(entity)
         val leafsGene = genetics.get(entity).dna.leafs
-        val parentConsumer = consumers.get(entity)
         val parentPosition = positions.get(entity).position
 
         val randomPositionAlongBranch = Math.random().toFloat()
@@ -301,7 +298,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         }
     }
 
-    override fun tick(tick: Int) {
+    override fun tick(number: Int) {
         life()
         for (entity in engine.entities) {
             if (roots.has(entity)) {

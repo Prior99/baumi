@@ -16,7 +16,7 @@ class EnergyDistribution(engine: Engine) : TickSubSystem(engine) {
     val consumers = mapperFor<Consumer>()
     val producers = mapperFor<Producer>()
 
-    override fun tick(tick: Int) {
+    override fun tick(number: Int) {
         // Of course, we only care about living entities in the life() function :)
         val livingEntities = engine.entities
             .filter { !healths.has(it) || healths.get(it).alive }
