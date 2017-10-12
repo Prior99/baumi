@@ -54,9 +54,6 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 energy = minEnergy
                 rate = defaultDna.energy.upkeep
             }
-            with<Producer> {
-                rate = 10f
-            }
             with<Root> {}
         }
     }

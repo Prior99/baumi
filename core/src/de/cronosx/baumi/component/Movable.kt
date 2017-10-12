@@ -5,5 +5,6 @@ import ktx.ashley.*
 
 class Movable(
     var weight: Float = 1f,
-    var floating: Boolean = true
+    var floating: Boolean = true,
+    var fixed: Boolean = true
 ) : Component

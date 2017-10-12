@@ -20,6 +20,7 @@ class Leafs(engine: Engine) : TickSubSystem(engine) {
             val leaf = leafs.get(entity)
             if (decompose.current > 3f) {
                 movable.floating = false
+                movable.fixed = false
                 if (leaf.parent != null) {
                     val parentBranch = branches.get(leaf.parent)
                     parentBranch.children.remove(entity)

@@ -10,7 +10,7 @@ import ktx.math.plus
 import ktx.log.*
 import kotlin.system.measureTimeMillis
 
-val tickSpeed = 0.01f
+val tickSpeed = 0.25f
 
 class Ticker() : IntervalSystem(tickSpeed) {
     val branches = mapperFor<Branch>()
@@ -28,6 +28,7 @@ class Ticker() : IntervalSystem(tickSpeed) {
 
     override fun addedToEngine(engine: Engine) {
         subSystems = listOf(
+            Buffering(engine), // Should be above `EnergyDistribution`.
             // Death(engine),
             Aging(engine),
             Decomposing(engine),

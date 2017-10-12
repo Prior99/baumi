@@ -16,7 +16,7 @@ class Gravity() : IteratingSystem(
     override fun processEntity(entity: Entity, delta: Float) {
         val position = positions.get(entity).position
         val movable = movables.get(entity)
-        if (position.y > world.groundHeight && !movable.floating) {
+        if (position.y > world.groundHeight && !movable.floating && !movable.fixed) {
             position.y -= movable.weight * delta
         }
     }

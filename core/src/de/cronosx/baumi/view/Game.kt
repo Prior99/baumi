@@ -26,6 +26,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         engine.addSystem(LeafRenderer(batch))
         engine.addSystem(Gravity())
         engine.addSystem(Wind())
+        engine.addSystem(GroundWaterRenderer(batch))
     }
 
     override fun render(delta: Float) {
