@@ -31,7 +31,7 @@ class Application : KtxGame<Screen>() {
         }
         addScreen(context.inject<Game>())
         setScreen<Game>()
-        Gdx.app.setLogLevel(LOG_DEBUG);
+        // Gdx.app.setLogLevel(LOG_DEBUG);
     }
 
     override fun dispose () {

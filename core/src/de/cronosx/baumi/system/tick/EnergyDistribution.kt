@@ -38,11 +38,11 @@ class EnergyDistribution(engine: Engine) : TickSubSystem(engine) {
         val efficiency = totalProduction / totalConsumption
         // Log the current production and consumption as well as the efficiency.
         val efficiencyString = "%.1f %%".format(efficiency * 100)
-        /* debug { */
-        /*     "Production:  $totalProduction (${producerEntities.count()} producers)\n" + */
-        /*     "Consumption: $totalConsumption (${consumerEntities.count()} consumers)\n" + */
-        /*     "Efficiency:  $efficiencyString"  */
-        /* } */
+        debug {
+            "Production:  $totalProduction (${producerEntities.count()} producers)\n" +
+            "Consumption: $totalConsumption (${consumerEntities.count()} consumers)\n" +
+            "Efficiency:  $efficiencyString" 
+        }
         // Give everybody energy in proportion to their demand and availability
         var leftoverEnergy = 0f
         for (entity in consumerEntities) {

@@ -53,6 +53,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             with<Consumer> {
                 maxEnergy = defaultDna.energy.max
                 minEnergy = maxEnergy / 2f
+                energy = minEnergy
                 rate = defaultDna.energy.upkeep
             }
             with<Producer> {
@@ -66,12 +67,12 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
      * Create a new branch forked from the `parent` entity with the given rotations.
      */
     fun createBranch(parent: Entity, rotationOffsetFixed: Float, rotationOffsetSpread: Float): Entity {
-        val rotationOffset = rotationOffsetFixed + lerp(-rotationOffsetSpread, rotationOffsetSpread, Math.random().toFloat())
         val parentBranch = branches.get(parent)
         val parentGenetic = genetics.get(parent)
         val parentHealth = healths.get(parent)
         val parentConsumer = consumers.get(parent)
 
+        val rotationOffset = rotationOffsetFixed + lerp(-rotationOffsetSpread, rotationOffsetSpread, Math.random().toFloat())
         val newMaxLength =
             parentGenetic.dna.length.falloff * 
             parentBranch.maxLength *
@@ -94,7 +95,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             }
             with<Consumer> {
                 maxEnergy = parentConsumer.maxEnergy * parentGenetic.dna.energy.falloff * lerp(0.9f, 1.1f, Math.random().toFloat())
-                minEnergy = maxEnergy * 0.5f
+                minEnergy = maxEnergy / 2f
                 energy = minEnergy
                 rate = parentConsumer.rate * parentGenetic.dna.energy.falloff * lerp(0.9f, 1.1f, Math.random().toFloat())
             }
@@ -127,20 +128,19 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
     fun growBranches(parent: Entity) {
         val parentPosition = positions.get(parent)
         val parentBranch = branches.get(parent)
-        val parentGenetic = genetics.get(parent)
+        val branchingGene = genetics.get(parent).dna.branching
 
         val pi = Math.PI.toFloat()
-
-        // create left branch
-        createBranch(parent, -0.2f, 0.1f * pi)
-
-        // create right branch
-        createBranch(parent, 0.2f, 0.1f * pi)
-
         // Sometimes, we also want to create a third branch in the middle. This is determined
         // by the `tripleProbability`.
-        if (Math.random() < parentGenetic.dna.branching.tripleProbability) {
-            createBranch(parent, 0f, 0.025f * pi)
+        val doTriple = Math.random() < branchingGene.tripleProbability
+        val spacing = if (doTriple) branchingGene.rotationSpacing else branchingGene.rotationSpacing / 2f
+        // create left branch
+        createBranch(parent, -spacing * pi, branchingGene.rotationVariety * pi)
+        // create right branch
+        createBranch(parent, spacing * pi, branchingGene.rotationVariety * pi)
+        if (doTriple) {
+            createBranch(parent, 0f, branchingGene.rotationVariety * pi)
         }
     }
 

@@ -38,8 +38,9 @@ data class GeneBranching (
     val maxDepth: Int,
     val minLength: Float,
     val tripleProbability: Float,
-    val probability: Float,
-    val branchCost: Float
+    val branchCost: Float,
+    val rotationSpacing: Float,
+    val rotationVariety: Float
 )
 
 data class DNA (
@@ -85,7 +86,8 @@ val defaultDna = DNA(
         maxDepth = 4,
         minLength = 0.3f,
         tripleProbability = 0.6f,
-        probability = 0.3f,
-        branchCost = 2f
+        branchCost = 2f,
+        rotationSpacing = 0.2f,
+        rotationVariety = 0.2f
     )
 )
