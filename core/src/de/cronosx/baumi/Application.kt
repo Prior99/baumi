@@ -1,6 +1,7 @@
 package de.cronosx.baumi
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Application.*
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -30,6 +31,7 @@ class Application : KtxGame<Screen>() {
         }
         addScreen(context.inject<Game>())
         setScreen<Game>()
+        Gdx.app.setLogLevel(LOG_DEBUG);
     }
 
     override fun dispose () {

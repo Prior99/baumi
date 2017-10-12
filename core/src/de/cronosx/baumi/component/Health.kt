@@ -15,4 +15,3 @@ class Health(
         current = 0f
     }
 }
-
