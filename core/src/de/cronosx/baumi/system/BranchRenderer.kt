@@ -11,7 +11,6 @@ import de.cronosx.baumi.component.Branch
 import de.cronosx.baumi.component.Position
 import ktx.ashley.allOf
 import ktx.ashley.mapperFor
-import ktx.log.info
 
 class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
         allOf(Branch::class, Position::class).get(), GenerationComparator()) {
@@ -47,7 +46,7 @@ class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
         val cBranch = mapperFor<Branch>()
 
         override fun compare(e1: Entity, e2: Entity): Int {
-            return cBranch.get(e1).generation - cBranch.get(e2).generation;
+            return cBranch.get(e1).generation - cBranch.get(e2).generation
         }
     }
 }

@@ -14,6 +14,10 @@ import ktx.math.vec2
 import ktx.log.*
 import kotlin.system.measureTimeMillis
 
+fun lerp(a: Float, b: Float, f: Float): Float {
+    return a + (b - a) * f
+}
+
 class Tree() : IntervalSystem(0.01f) {
     val branches = mapperFor<Branch>()
     val genetics = mapperFor<Genetic>()
@@ -21,13 +25,14 @@ class Tree() : IntervalSystem(0.01f) {
     val consumers = mapperFor<Consumer>()
     val leafs = mapperFor<Leaf>()
     val positions = mapperFor<Position>()
+    val producers = mapperFor<Producer>()
 
     var root: Entity? = null
     var tick = 0
 
     override fun addedToEngine(engine: Engine) {
-        root = engine.entity{
-            with<Position>{
+        root = engine.entity {
+            with<Position> {
                 position = vec2(appWidth/ 2f, 320f)
             }
             with<Branch> {
@@ -48,10 +53,14 @@ class Tree() : IntervalSystem(0.01f) {
                 rate = defaultDna.energy.upkeep
                 priority = 1000f
             }
+            with<Producer> {
+                rate = 10f
+            }
         }
     }
 
-    fun createBranch(parent: Entity, rotationOffset: Float): Entity {
+    fun createBranch(parent: Entity, rotationOffsetFixed: Float, rotationOffsetSpread: Float): Entity {
+        val rotationOffset = rotationOffsetFixed + lerp(-rotationOffsetSpread, rotationOffsetSpread, Math.random().toFloat())
         val parentBranch = branches.get(parent)
         val parentGenetic = genetics.get(parent)
         val parentHealth = healths.get(parent)
@@ -59,8 +68,9 @@ class Tree() : IntervalSystem(0.01f) {
 
         val newMaxLength =
             parentGenetic.dna.length.falloff * parentBranch.maxLength +
-            Math.random().toFloat() * 0.2f - 0.1f
-        return engine.entity {
+            lerp(-0.1f, 0.1f, Math.random().toFloat())
+
+        val newBranch = engine.entity {
             with<Position> {} // Will be adjusted anyway.
             with<Branch> {
                 rotation = parentBranch.rotation + rotationOffset
@@ -81,6 +91,9 @@ class Tree() : IntervalSystem(0.01f) {
                 rate = parentConsumer.rate * parentGenetic.dna.energy.falloff
             }
         }
+
+        parentBranch.children.add(newBranch)
+        return newBranch
     }
 
     fun getDirectionVectorAlongBranch(length: Float, rotation: Float): Vector2 {
@@ -100,16 +113,18 @@ class Tree() : IntervalSystem(0.01f) {
         val parentBranch = branches.get(parent)
         val parentGenetic = genetics.get(parent)
 
-        val rightAngle = 0.1f + Math.random().toFloat() * 0.2f
-        val leftAngle = 0.1f + Math.random().toFloat() * 0.2f
-        val right = createBranch(parent, Math.PI.toFloat() * rightAngle)
-        val left = createBranch(parent, -Math.PI.toFloat() * leftAngle)
-        parentBranch.children.add(left)
-        parentBranch.children.add(right)
+        val pi = Math.PI.toFloat()
+
+        // create left branch
+        createBranch(parent, -0.2f, 0.1f * pi)
+
+        // create right branch
+        createBranch(parent, 0.2f, 0.1f * pi)
+
+        // Sometimes, we also want to create a third branch in the middle. This is determined
+        // by the `tripleProbability`.
         if (Math.random() < parentGenetic.dna.branching.tripleProbability) {
-            val centerAngle = Math.random().toFloat() * 0.05f
-            val center = createBranch(parent, Math.PI.toFloat() * centerAngle)
-            parentBranch.children.add(center)
+            createBranch(parent, 0f, 0.025f * pi)
         }
     }
 
@@ -149,23 +164,13 @@ class Tree() : IntervalSystem(0.01f) {
         })
     }
 
-    fun killRecursively(entity: Entity) {
-        info { "Killing entity." }
-        val health = healths.get(entity)
-        health.current = 0f
-        if (!branches.has(entity)) {
-            return
-        }
-        val branch = branches.get(entity)
-        branch.children.forEach{ killRecursively(it) }
-    }
 
     fun getMaxGeneration(entity: Entity): Int {
         if (!branches.has(entity)) {
             return 0
         }
         val branch = branches.get(entity)
-        return maxOf(branch.children.map{ getMaxGeneration(it) }.max() ?: 0, branch.generation)
+        return maxOf(branch.children.map { getMaxGeneration(it) }.max() ?: 0, branch.generation)
     }
 
     fun maxLeafCount(entity: Entity): Int {
@@ -181,56 +186,60 @@ class Tree() : IntervalSystem(0.01f) {
      * @param contingent The amount of energy available to the system.
      * @return The amount of energy consumed.
      */
-    fun life(initialContingent: Float): Float {
+    fun life(): Float {
+        val producerEntities = engine.entities.filter { producers.has(it) }
+        val initialContingent = producerEntities.sumByDouble({ producers.get(it).rate.toDouble() }).toFloat()
+
         info {
-            "Calculating tick ${tick} with contingent of ${initialContingent}" +
+            "Calculating tick $tick with contingent of $initialContingent" +
             " for ${engine.entities.count()} entities:"
         }
         val sortedEntities = engine.entities
-            .filter{ consumers.has(it) }
-            .filter{ !healths.has(it) || !healths.get(it).dead }
-            .sortedWith(compareBy{ -consumers.get(it).priority })
+            .filter { consumers.has(it) }
+            .filter { !healths.has(it) || healths.get(it).alive }
+            .sortedWith(compareBy { -consumers.get(it).priority })
         var currentContingent = initialContingent
+
         // 1. Make sure nobody dies.
         for (entity in sortedEntities) {
             val consumer = consumers.get(entity)
             // If the contingent is large enough to fullfill the consumer's needs, reduce the contingent and continue.
             if (currentContingent + consumer.energy > consumer.rate) {
+                // Find out how much to take from the contingent and add it to the consumer:
+                // cannot be more than the rate or the remaining contingent
                 val contingentPart = minOf(consumer.rate, currentContingent)
+
+                // Remove contingent from remainder, add to consumer, and 
+                // also remove energy from the consumer at its consumption rate
                 currentContingent -= contingentPart
-                consumer.energy -= consumer.rate - contingentPart
-                continue
-            }
-            // If not and the consumer has a health component, impact it.
-            if (healths.has(entity)) {
+                consumer.energy += contingentPart - consumer.rate
+            } else if (healths.has(entity)) {
+                // If the energy was not enough and the consumer has a health
+                // component, impact it.
                 val loss = consumer.rate - maxOf(currentContingent, 0f)
-                info { "    Reducing health of entity by ${loss}." }
+                info { "    Reducing health of entity by $loss." }
                 val health = healths.get(entity)
                 health.current -= loss
-                if (health.current <= 0f) {
-                    if (branches.has(entity)) {
-                        killRecursively(entity)
-                    }
-                }
             }
         }
         if (currentContingent <= 0) {
             info { "    => Contingent depleted after upkeep." }
-            return initialContingent - currentContingent;
+            return initialContingent - currentContingent
         }
+
         // 2. Fill buffers.
         for (entity in sortedEntities) {
             val consumer = consumers.get(entity)
             val energyGain = minOf(currentContingent, consumer.remainingBufferCapacity)
             if (energyGain > 0) {
-                info { "    Increasing buffer from ${consumer.energy} to ${consumer.energy + energyGain}."}
+                info { "    Increasing buffer from ${consumer.energy} to ${consumer.energy + energyGain}." }
             }
             currentContingent -= energyGain
             consumer.energy += energyGain
         }
         if (currentContingent <= 0) {
             info { "    => Contingent depleted after filling energy storages." }
-            return initialContingent - currentContingent;
+            return initialContingent - currentContingent
         }
         // 3. Handle branches
         for (entity in sortedEntities) {
@@ -241,7 +250,7 @@ class Tree() : IntervalSystem(0.01f) {
             val dna = genetics.get(entity).dna
             // 3.1. Growing leafs
             val canGrowLeaf =
-                branch.children.filter{ leafs.has(it) }.count() < maxLeafCount(entity) &&
+                branch.children.filter { leafs.has(it) }.count() < maxLeafCount(entity) &&
                 currentContingent >= dna.leafs.leafCost
             if (canGrowLeaf) {
                 info { "Growing a leaf." }
@@ -249,7 +258,7 @@ class Tree() : IntervalSystem(0.01f) {
                 currentContingent -= dna.leafs.leafCost
             }
             // 3.2. Branching
-            val canGrowBranches = branch.children.filter{ branches.has(it) }.count() == 0 &&
+            val canGrowBranches = branch.children.filter { branches.has(it) }.count() == 0 &&
                 branch.length > dna.branching.minLength * branch.maxLength &&
                 branch.generation < dna.branching.maxDepth &&
                 currentContingent >= dna.branching.branchCost
@@ -273,19 +282,17 @@ class Tree() : IntervalSystem(0.01f) {
                 continue
             }
             val branch = branches.get(entity)
-            val livingLeafs = branch.children
-                .filter{ leafs.has(it) && healths.has(it) }
-                .filter{ !healths.get(it).dead }
+            val livingLeafs = branch.children.filter { leafs.has(it) && healths.has(it) && healths.get(it).alive }
             val maxLeafs = maxLeafCount(entity)
             if (livingLeafs.count() <= maxLeafs) {
                 continue
             }
             for (i in 0..maxLeafs) {
-                killRecursively(livingLeafs[i])
+                healths.get(livingLeafs[i]).kill()
             }
         }
         if (currentContingent > 0) {
-            info { "    => Contingent was not depleted. Contingent of ${currentContingent} left." }
+            info { "    => Contingent was not depleted. Contingent of $currentContingent left." }
         }
         return initialContingent - currentContingent
     }
@@ -318,7 +325,7 @@ class Tree() : IntervalSystem(0.01f) {
     override fun updateInterval() {
         val time = measureTimeMillis {
             tick++
-            life(10f)
+            life()
             adjust()
         }
         info { "    Tick took ${time}ms." }

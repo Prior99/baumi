@@ -3,9 +3,6 @@ package de.cronosx.baumi.view
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
-import com.badlogic.ashley.core.Component
 import com.badlogic.ashley.core.PooledEngine
 import ktx.ashley.*
 import ktx.app.KtxScreen
@@ -39,6 +36,6 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     }
 
     override fun hide() {
-    
+
     }
 }

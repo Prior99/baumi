@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.TextureRegion
 import de.cronosx.baumi.appHeight
 import de.cronosx.baumi.appWidth
 import ktx.ashley.*
@@ -31,10 +30,10 @@ class Clouds(var batch: Batch) : IteratingSystem(
 
     override fun update(delta: Float) {
         super.update(delta)
-        val cloudCount = engine.entities.filter{ cCloud.has(it) }.count()
+        val cloudCount = engine.entities.filter { cCloud.has(it) }.count()
         if (cloudCount < 2) {
             info { "Only $cloudCount clouds alive. Spawning cloud." }
-            engine.add{entity {
+            engine.add { entity {
                 with<Position> {
                     position = vec2(
                         appWidth + Math.random().toFloat() * textureCloud.width,
@@ -45,7 +44,7 @@ class Clouds(var batch: Batch) : IteratingSystem(
                     index = Math.floor(Math.random() * 3f).toInt()
                     speed = Math.random().toFloat() * 20f + 10f
                 }
-            }}
+            } }
         }
     }
 }
