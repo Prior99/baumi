@@ -121,10 +121,10 @@ class Ticker() : IntervalSystem(0.01f) {
         val pi = Math.PI.toFloat()
 
         // create left branch
-        createBranch(parent, -0.2f, 0.1f * pi)
+        createBranch(parent, -0.3f, 0.3f * pi)
 
         // create right branch
-        createBranch(parent, 0.2f, 0.1f * pi)
+        createBranch(parent, 0.3f, 0.3f * pi)
 
         // Sometimes, we also want to create a third branch in the middle. This is determined
         // by the `tripleProbability`.

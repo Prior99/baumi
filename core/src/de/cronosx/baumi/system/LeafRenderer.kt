@@ -24,11 +24,12 @@ class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
         val health = healths.get(entity)
 
         if (health.alive) {
-            val x = 100 * minOf(age.age / 10, 10)
-            val sprite = Sprite(TextureRegion(leafTexture, x, 0, 100, 60))
-            sprite.setOrigin(0f, leafTexture.height / 2f)
+            val x = 100 * minOf(age.age / 10, 7)
+            val texture = TextureRegion(leafTexture, x, 0, 100, 60)
+            val sprite = Sprite(texture)
+            sprite.setOrigin(0f, 30f)
             sprite.rotation = radiansToDegrees * leaf.rotation
-            sprite.setPosition(position.x, position.y + leafTexture.height / 2f - 10)
+            sprite.setPosition(position.x, position.y + 30f - 10)
             sprite.setScale(0.3f)
             sprite.draw(batch)
         }
