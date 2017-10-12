@@ -1,4 +1,4 @@
-package de.cronosx.baumi.system
+package de.cronosx.baumi.system.tick
 
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
@@ -18,7 +18,7 @@ fun lerp(a: Float, b: Float, f: Float): Float {
     return a + (b - a) * f
 }
 
-class Tree() : IntervalSystem(0.01f) {
+class Ticker() : IntervalSystem(0.01f) {
     val branches = mapperFor<Branch>()
     val genetics = mapperFor<Genetic>()
     val healths = mapperFor<Health>()
@@ -26,6 +26,8 @@ class Tree() : IntervalSystem(0.01f) {
     val leafs = mapperFor<Leaf>()
     val positions = mapperFor<Position>()
     val producers = mapperFor<Producer>()
+
+    var subSystems: List<TickSubSystem> = ArrayList()
 
     var root: Entity? = null
     var tick = 0
@@ -57,6 +59,9 @@ class Tree() : IntervalSystem(0.01f) {
                 rate = 10f
             }
         }
+        subSystems = listOf(
+            Death(engine)
+        )
     }
 
     fun createBranch(parent: Entity, rotationOffsetFixed: Float, rotationOffsetSpread: Float): Entity {
@@ -109,7 +114,6 @@ class Tree() : IntervalSystem(0.01f) {
     }
 
     fun growBranches(parent: Entity) {
-        val parentPosition = positions.get(parent)
         val parentBranch = branches.get(parent)
         val parentGenetic = genetics.get(parent)
 
@@ -327,6 +331,9 @@ class Tree() : IntervalSystem(0.01f) {
             tick++
             life()
             adjust()
+        }
+        for (system in subSystems) {
+            system.tick(tick)
         }
         info { "    Tick took ${time}ms." }
     }

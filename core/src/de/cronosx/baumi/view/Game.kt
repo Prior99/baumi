@@ -10,6 +10,7 @@ import ktx.scene2d.*
 import ktx.math.*
 import ktx.log.*
 import de.cronosx.baumi.system.*
+import de.cronosx.baumi.system.tick.Ticker
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.data.*
 
@@ -20,7 +21,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
 
     override fun show() {
         engine.addSystem(Clouds(batch))
-        engine.addSystem(Tree())
+        engine.addSystem(Ticker())
         engine.addSystem(BranchRenderer(batch))
         engine.addSystem(LeafRenderer(batch))
     }
