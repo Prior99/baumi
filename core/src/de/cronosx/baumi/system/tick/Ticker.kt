@@ -61,7 +61,9 @@ class Ticker() : IntervalSystem(0.01f) {
         }
         subSystems = listOf(
             Death(engine),
-            Aging(engine)
+            Aging(engine),
+            Decomposing(engine),
+            Leafs(engine)
         )
     }
 
@@ -156,6 +158,7 @@ class Ticker() : IntervalSystem(0.01f) {
                 generation = branch.generation + 1
                 rotation = branch.rotation + rotationOffset * Math.PI.toFloat()
                 positionAlongBranch = randomPositionAlongBranch
+                parent = entity
             }
             with<Consumer> {
                 maxEnergy = leafsGene.maxEnergy
@@ -166,7 +169,14 @@ class Ticker() : IntervalSystem(0.01f) {
                 current = leafsGene.maxHealth
                 max = leafsGene.maxHealth
             }
-            with<Age>{}
+            with<Age> {}
+            with<Decompose> {
+                max = 7f
+                speed = 0.001f * Math.random().toFloat() * 5f
+            }
+            with<Movable> {
+                weight = 100f
+            }
         })
     }
 
