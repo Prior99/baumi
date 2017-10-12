@@ -134,7 +134,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         // Sometimes, we also want to create a third branch in the middle. This is determined
         // by the `tripleProbability`.
         val doTriple = Math.random() < branchingGene.tripleProbability
-        val spacing = if (doTriple) branchingGene.rotationSpacing else branchingGene.rotationSpacing / 2f
+        val spacing = if (doTriple) branchingGene.rotationSpacing / 2f else branchingGene.rotationSpacing
         // create left branch
         createBranch(parent, -spacing * pi, branchingGene.rotationVariety * pi)
         // create right branch
