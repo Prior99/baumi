@@ -2,15 +2,11 @@ package de.cronosx.baumi.system.tick
 
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.systems.IntervalSystem 
-import com.badlogic.gdx.math.Vector2
-import de.cronosx.baumi.appWidth
+import com.badlogic.ashley.systems.IntervalSystem
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.data.*
-import ktx.ashley.entity
 import ktx.ashley.mapperFor
 import ktx.math.plus
-import ktx.math.vec2
 import ktx.log.*
 import kotlin.system.measureTimeMillis
 

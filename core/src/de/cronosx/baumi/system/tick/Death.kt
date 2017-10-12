@@ -1,7 +1,6 @@
 package de.cronosx.baumi.system.tick
 
 import de.cronosx.baumi.component.*
-import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.Engine
 import ktx.ashley.*
@@ -26,7 +25,7 @@ class Death(engine: Engine) : TickSubSystem(engine) {
     override fun tick(number: Int) {
         for (entity in engine.entities) {
             if (!consumers.has(entity) || !healths.has(entity)) {
-                continue;
+                continue
             }
             val consumer = consumers.get(entity)
             val health = healths.get(entity)

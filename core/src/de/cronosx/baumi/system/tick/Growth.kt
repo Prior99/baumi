@@ -2,7 +2,6 @@ package de.cronosx.baumi.system.tick
 
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.systems.IntervalSystem
 import com.badlogic.gdx.math.Vector2
 import de.cronosx.baumi.appWidth
 import de.cronosx.baumi.component.*
@@ -12,7 +11,6 @@ import ktx.ashley.mapperFor
 import ktx.math.plus
 import ktx.math.vec2
 import ktx.log.*
-import kotlin.system.measureTimeMillis
 
 /**
  * `lerp` is a linear interpolation method, adjusting `a` to move towards `b` with the
@@ -74,7 +72,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
 
         val rotationOffset = rotationOffsetFixed + lerp(-rotationOffsetSpread, rotationOffsetSpread, Math.random().toFloat())
         val newMaxLength =
-            parentGenetic.dna.length.falloff * 
+            parentGenetic.dna.length.falloff *
             parentBranch.maxLength *
             lerp(0.9f, 1.1f, Math.random().toFloat())
 
@@ -242,7 +240,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 surplus -= dna.leafs.leafCost
             }
             // 2. Branching
-            val canGrowBranches = 
+            val canGrowBranches =
                 branch.children.filter { branches.has(it) }.count() == 0 &&
                 branch.length > dna.branching.minLength * branch.maxLength &&
                 branch.generation < dna.branching.maxDepth &&
@@ -253,7 +251,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 consumer.energy -= dna.branching.branchCost
             }
             // 3. Growing length
-            val canGrowLength = 
+            val canGrowLength =
                 branch.length < branch.maxLength &&
                 surplus >= dna.length.growCost
             if (canGrowLength) {

@@ -4,9 +4,13 @@ all: build-android build-desktop
 
 run: run-desktop
 
+ktlint:
+	curl -L https://github.com/shyiko/ktlint/releases/download/0.10.0/ktlint > ktlint
+	chmod +x ktlint
+
 @PHONY: lint
-lint: 
-	ktlint core/src/**/*.kt
+lint: ktlint
+	./ktlint core/src/**/*.kt
 
 @PHONY: run-android
 run-android:
