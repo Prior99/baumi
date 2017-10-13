@@ -11,9 +11,9 @@ data class World (
 
 val world = World(
     groundHeight = 360f,
-    initialWater = 500000f,
-    maxWater = 500000f,
+    initialWater = 100f,
+    maxWater = 1000f,
     waterEnergyYield = 8f,
     wateringCanCapacity = 50f,
-    tickSpeed = 0.01f
+    tickSpeed = 0.5f
 )

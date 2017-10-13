@@ -2,6 +2,7 @@ package de.cronosx.baumi
 
 import com.badlogic.gdx.Application.*
 import com.badlogic.gdx.Screen
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -11,6 +12,7 @@ import ktx.app.KtxGame
 import ktx.inject.Context
 import ktx.async.enableKtxCoroutines
 import de.cronosx.baumi.view.Game
+import de.cronosx.baumi.data.*
 import ktx.scene2d.Scene2DSkin
 
 val appWidth = 1080f
@@ -33,7 +35,7 @@ class Application : KtxGame<Screen>() {
         }
         addScreen(context.inject<Game>())
         setScreen<Game>()
-        // Gdx.app.setLogLevel(LOG_DEBUG);
+        Gdx.app.setLogLevel(debug.logLevel)
     }
 
     override fun dispose () {

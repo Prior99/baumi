@@ -8,7 +8,7 @@ import ktx.math.plus
 import ktx.log.*
 import kotlin.system.measureTimeMillis
 
-class Ticker() : IntervalSystem(world.tickSpeed) {
+class Ticker() : IntervalSystem(if (debug.extremeSpeed) 0.001f else world.tickSpeed) {
     var subSystems: List<TickSubSystem> = ArrayList()
     var tick = 0
 
