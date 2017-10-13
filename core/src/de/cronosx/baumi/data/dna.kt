@@ -120,7 +120,8 @@ data class GeneFruits (
     val fruitCost: Float,
     val growingDuration: Int,
     val bloomingDuration: Int,
-    val fruitDuration: Int
+    val fruitDuration: Int,
+    val minGeneration: Int
 )
 
 data class DNA (
@@ -173,12 +174,13 @@ val defaultDna = DNA(
     ),
     fruits = GeneFruits(
         maxValue = 100,
-        maxGenerationFruitCountPerLength = 0.01f,
+        maxGenerationFruitCountPerLength = 0.02f,
+        minGeneration = 2,
         upkeep = 0.01f,
         maxEnergy = 1f,
         fruitCost = 2f,
-        growingDuration = 100,
-        bloomingDuration = 200,
-        fruitDuration = 50
+        growingDuration = 300,
+        bloomingDuration = 1000,
+        fruitDuration = 200
     )
 )

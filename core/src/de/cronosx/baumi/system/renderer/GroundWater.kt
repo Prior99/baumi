@@ -3,7 +3,6 @@ package de.cronosx.baumi.system.renderer
 import com.badlogic.ashley.core.Engine
 import de.cronosx.baumi.component.*
 import com.badlogic.gdx.graphics.g2d.*
-import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.graphics.Texture
 import ktx.ashley.*
 import ktx.math.*

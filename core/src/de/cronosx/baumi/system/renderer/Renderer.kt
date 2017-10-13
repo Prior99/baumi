@@ -1,15 +1,11 @@
 package de.cronosx.baumi.system.renderer
 
 import com.badlogic.ashley.core.Engine
-import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.EntitySystem
-import com.badlogic.gdx.math.MathUtils.radiansToDegrees
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.*
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.Math.*
-import ktx.ashley.allOf
-import ktx.ashley.mapperFor
 import ktx.log.*
 
 class Renderer(var batch: Batch) : EntitySystem() {
@@ -21,9 +17,9 @@ class Renderer(var batch: Batch) : EntitySystem() {
         subSystems = listOf(
             BranchRenderer(batch, engine),
             CloudRenderer(batch, engine),
-            FruitRenderer(batch, engine),
             GroundWaterRenderer(batch, engine),
-            LeafRenderer(batch, engine)
+            LeafRenderer(batch, engine),
+            FruitRenderer(batch, engine)
         )
     }
 

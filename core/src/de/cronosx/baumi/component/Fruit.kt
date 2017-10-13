@@ -8,5 +8,6 @@ class Fruit(
     var rotation: Float = 0f,
     var generation: Int = 0,
     var positionAlongBranch: Float = 1f,
-    var parent: Entity? = null
+    var parent: Entity? = null,
+    var age: Int = 0
 ) : Component

@@ -3,11 +3,8 @@ package de.cronosx.baumi.system.renderer
 import com.badlogic.ashley.core.Engine
 import de.cronosx.baumi.component.*
 import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.graphics.Texture
-import de.cronosx.baumi.appHeight
-import de.cronosx.baumi.appWidth
 import ktx.ashley.*
 import ktx.math.*
 import ktx.log.*
@@ -27,7 +24,7 @@ class CloudRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) 
     }
 
     override fun render(delta: Float) {
-        val entities = engine.entities.filter{ clouds.has(it) && positions.has(it) }
-        entities.forEach{ processEntity(it, delta) }
+        val entities = engine.entities.filter { clouds.has(it) && positions.has(it) }
+        entities.forEach { processEntity(it, delta) }
     }
 }

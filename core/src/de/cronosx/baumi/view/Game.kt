@@ -3,7 +3,6 @@ package de.cronosx.baumi.view
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.scenes.scene2d.Touchable.enabled
 import com.badlogic.ashley.core.PooledEngine
 import com.badlogic.gdx.utils.*
@@ -69,7 +68,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         engine.addSystem(events)
         engine.addSystem(Clouds())
         engine.addSystem(Renderer(batch))
-        engine.addSystem(DebugRenderer(shapeRenderer))
+        // engine.addSystem(DebugRenderer(shapeRenderer))
         stage.addActor(view)
         stage.addActor(ui)
         Gdx.input.inputProcessor = stage

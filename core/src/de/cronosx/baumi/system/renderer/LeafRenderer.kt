@@ -2,13 +2,11 @@ package de.cronosx.baumi.system.renderer
 
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.systems.SortedIteratingSystem
 import com.badlogic.gdx.math.MathUtils.radiansToDegrees
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.*
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.Math.*
-import ktx.ashley.allOf
 import ktx.ashley.mapperFor
 import ktx.log.*
 
@@ -37,17 +35,20 @@ class LeafRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
         // Create sprite and render it.
         val texture = TextureRegion(leafTexture, x, y, textureWidth, textureHeight)
         val sprite = Sprite(texture)
-        sprite.setOrigin(0f, textureHeight.toFloat() / 2f)
-        sprite.rotation = radiansToDegrees * leaf.rotation
-        sprite.setPosition(position.x, position.y + textureHeight.toFloat() / 2f - 10f)
+        sprite.setPosition(position.x, position.y)
         sprite.setScale(0.3f)
+        // Rotate at the given offset.
+        sprite.setOrigin(0f, textureHeight / 2f)
+        sprite.rotation = radiansToDegrees * leaf.rotation
+        // Adjust after rotating.
+        sprite.translateY(-textureHeight / 2f)
         sprite.draw(batch)
     }
 
     override fun render(delta: Float) {
-        val entities = engine.entities.filter{
+        val entities = engine.entities.filter {
             leafs.has(it) && positions.has(it) && ages.has(it) && decomposes.has(it)
         }
-        entities.forEach{ processEntity(it, delta) }
+        entities.forEach { processEntity(it, delta) }
     }
 }

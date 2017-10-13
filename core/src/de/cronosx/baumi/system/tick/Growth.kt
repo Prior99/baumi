@@ -52,7 +52,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         // Create the root tree branch.
         engine.entity {
             with<Position> {
-                position = vec2(appWidth/ 2f, 320f)
+                position = vec2(appWidth/ 2f, 360f)
             }
             with<Branch> {
                 rotation = defaultDna.rotation.initial
@@ -289,7 +289,8 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             // 4. Growing fruits
             val canGrowFruit =
                 branch.children.filter { fruits.has(it) }.count() < maxFruitCount(entity) &&
-                surplus >= dna.fruits.fruitCost
+                surplus >= dna.fruits.fruitCost &&
+                branch.generation >= dna.fruits.minGeneration
             if (canGrowFruit) {
                 growFruit(entity)
                 consumer.energy -= dna.fruits.fruitCost
@@ -331,6 +332,10 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 val leaf = leafs.get(child)
                 var childPosition = positions.get(child)
                 childPosition.position = getChildPosition(position, branch, leaf.positionAlongBranch)
+            } else if (fruits.has(child)) {
+                val fruit = fruits.get(child)
+                var childPosition = positions.get(child)
+                childPosition.position = getChildPosition(position, branch, fruit.positionAlongBranch)
             } else {
                 adjust(child, getChildPosition(position, branch))
             }

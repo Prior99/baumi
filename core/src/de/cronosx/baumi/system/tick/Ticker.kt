@@ -1,11 +1,9 @@
 package de.cronosx.baumi.system.tick
 
 import com.badlogic.ashley.core.Engine
-import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.systems.IntervalSystem
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.data.*
-import ktx.ashley.mapperFor
 import ktx.math.plus
 import ktx.log.*
 import kotlin.system.measureTimeMillis
@@ -22,7 +20,8 @@ class Ticker() : IntervalSystem(world.tickSpeed) {
             Decomposing(engine),
             Leafs(engine),
             Growth(engine),
-            EnergyDistribution(engine)
+            EnergyDistribution(engine),
+            Fruits(engine)
         )
     }
 
