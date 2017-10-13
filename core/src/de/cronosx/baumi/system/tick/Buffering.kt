@@ -32,8 +32,8 @@ class Buffering(engine: Engine) : TickSubSystem(engine) {
             val buffer = buffers.get(entity)
             val producer = producers.get(entity)
             if (buffer.current > 0f) {
+                producer.rate = maxOf(buffer.energyYield, buffer.current)
                 buffer.current = maxOf(0f, buffer.current - buffer.energyYield)
-                producer.rate = buffer.energyYield
             } else {
                 producer.rate = 0f
             }
