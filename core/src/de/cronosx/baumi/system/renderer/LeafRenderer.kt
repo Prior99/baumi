@@ -1,5 +1,6 @@
-package de.cronosx.baumi.system
+package de.cronosx.baumi.system.renderer
 
+import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.systems.SortedIteratingSystem
 import com.badlogic.gdx.math.MathUtils.radiansToDegrees
@@ -11,8 +12,7 @@ import ktx.ashley.allOf
 import ktx.ashley.mapperFor
 import ktx.log.*
 
-class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
-        allOf(Leaf::class, Position::class, Age::class, Decompose::class).get(), ZComparator()) {
+class LeafRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
     val leafs = mapperFor<Leaf>()
     val ages = mapperFor<Age>()
     val decomposes = mapperFor<Decompose>()
@@ -23,7 +23,7 @@ class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
     val textureHeight = 60
     val textureWidth = 100
 
-    override fun processEntity(entity: Entity, delta: Float) {
+    fun processEntity(entity: Entity, delta: Float) {
         val position = positions.get(entity).position
         val leaf = leafs.get(entity)
         val age = ages.get(entity).age
@@ -44,11 +44,10 @@ class LeafRenderer(var batch: Batch) : SortedIteratingSystem(
         sprite.draw(batch)
     }
 
-    class ZComparator : Comparator<Entity> {
-        val leafs = mapperFor<Leaf>()
-
-        override fun compare(e1: Entity, e2: Entity): Int {
-            return leafs.get(e1).generation - leafs.get(e2).generation
+    override fun render(delta: Float) {
+        val entities = engine.entities.filter{
+            leafs.has(it) && positions.has(it) && ages.has(it) && decomposes.has(it)
         }
+        entities.forEach{ processEntity(it, delta) }
     }
 }

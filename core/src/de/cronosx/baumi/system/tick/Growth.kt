@@ -20,12 +20,31 @@ fun lerp(a: Float, b: Float, f: Float): Float {
     return a + (b - a) * f
 }
 
+/**
+ * Returns a vector with the direction pointing along the branch.
+ */
+fun getDirectionVectorAlongBranch(length: Float, rotation: Float): Vector2 {
+    return vec2(
+        length * Math.cos(rotation.toDouble()).toFloat(),
+        length * Math.sin(rotation.toDouble()).toFloat()
+    )
+}
+
+/**
+ * Calculates the position of a child from the parent's position.
+ */
+fun getChildPosition(parentPos: Position, parentBranch: Branch, positionAlongBranch: Float = 0.94f): Vector2 {
+    val dir = getDirectionVectorAlongBranch(parentBranch.length, parentBranch.rotation)
+    return parentPos.position.cpy().add(dir.scl(positionAlongBranch))
+}
+
 class Growth(engine: Engine) : TickSubSystem(engine) {
     val branches = mapperFor<Branch>()
     val genetics = mapperFor<Genetic>()
     val healths = mapperFor<Health>()
     val consumers = mapperFor<Consumer>()
     val leafs = mapperFor<Leaf>()
+    val fruits = mapperFor<Fruit>()
     val positions = mapperFor<Position>()
     val roots = mapperFor<Root>()
 
@@ -100,24 +119,6 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
     }
 
     /**
-     * Returns a vector with the direction pointing along the branch.
-     */
-    fun getDirectionVectorAlongBranch(length: Float, rotation: Float): Vector2 {
-        return vec2(
-            length * Math.cos(rotation.toDouble()).toFloat(),
-            length * Math.sin(rotation.toDouble()).toFloat()
-        )
-    }
-
-    /**
-     * Calculates the position of a child from the parent's position.
-     */
-    fun getChildPosition(parentPos: Position, parentBranch: Branch, positionAlongBranch: Float = 0.94f): Vector2 {
-        val dir = getDirectionVectorAlongBranch(parentBranch.length, parentBranch.rotation)
-        return parentPos.position.cpy().add(dir.scl(positionAlongBranch))
-    }
-
-    /**
      * Handles the growth of branches for a specific entity.
      */
     fun growBranches(parent: Entity) {
@@ -144,6 +145,31 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         val branch = branches.get(entity)
         val lengthGene = genetics.get(entity).dna.length
         branch.length += lengthGene.growthSpeed
+    }
+
+    fun growFruit(entity: Entity) {
+        val branch = branches.get(entity)
+        val fruitsGene = genetics.get(entity).dna.fruits
+        val parentPosition = positions.get(entity).position
+
+        val randomPositionAlongBranch = Math.random().toFloat()
+        val dir = getDirectionVectorAlongBranch(branch.length, branch.rotation)
+        branch.children.add(engine.entity {
+            with<Position> {
+                position = dir.cpy().scl(randomPositionAlongBranch) + parentPosition
+            }
+            with<Fruit> {
+                generation = branch.generation + 1
+                rotation = Math.random().toFloat() * Math.PI.toFloat() * 2f
+                positionAlongBranch = randomPositionAlongBranch
+                parent = entity
+            }
+            with<Consumer> {
+                maxEnergy = fruitsGene.maxEnergy
+                rate = fruitsGene.upkeep
+            }
+            with<Age> {}
+        })
     }
 
     /**
@@ -199,6 +225,13 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         return maxOf(branch.children.map { getMaxGeneration(it) }.max() ?: 0, branch.generation)
     }
 
+    fun maxFruitCount(entity: Entity): Int {
+        val branch = branches.get(entity)
+        val dna = genetics.get(entity).dna
+        val relativeDepth = getMaxGeneration(entity) - branch.generation
+        return Math.floor(dna.fruits.maxGenerationFruitCountPerLength * branch.length.toDouble()).toInt()
+    }
+
     /**
      * Calculates the maximum amount of leafs for a specific entity based on the length, dna and
      * depth.
@@ -252,6 +285,15 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 growLength(entity)
                 surplus -= dna.length.growCost
                 consumer.energy -= dna.length.growCost
+            }
+            // 4. Growing fruits
+            val canGrowFruit =
+                branch.children.filter { fruits.has(it) }.count() < maxFruitCount(entity) &&
+                surplus >= dna.fruits.fruitCost
+            if (canGrowFruit) {
+                growFruit(entity)
+                consumer.energy -= dna.fruits.fruitCost
+                surplus -= dna.fruits.fruitCost
             }
         }
         // Kill all obsolete leafs.

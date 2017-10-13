@@ -112,13 +112,25 @@ data class GeneBranching (
     val rotationVariety: Float
 )
 
+data class GeneFruits (
+    val maxValue: Int,
+    val maxGenerationFruitCountPerLength: Float,
+    val upkeep: Float,
+    val maxEnergy: Float,
+    val fruitCost: Float,
+    val growingDuration: Int,
+    val bloomingDuration: Int,
+    val fruitDuration: Int
+)
+
 data class DNA (
     val rotation: GeneRotation,
     val leafs: GeneLeafs,
     val length: GeneLength,
     val health: GeneHealth,
     val energy: GeneEnergy,
-    val branching: GeneBranching
+    val branching: GeneBranching,
+    val fruits: GeneFruits
 )
 
 val defaultDna = DNA(
@@ -158,5 +170,15 @@ val defaultDna = DNA(
         branchCost = 2f,
         rotationSpacing = 0.2f,
         rotationVariety = 0.2f
+    ),
+    fruits = GeneFruits(
+        maxValue = 100,
+        maxGenerationFruitCountPerLength = 0.01f,
+        upkeep = 0.01f,
+        maxEnergy = 1f,
+        fruitCost = 2f,
+        growingDuration = 100,
+        bloomingDuration = 200,
+        fruitDuration = 50
     )
 )

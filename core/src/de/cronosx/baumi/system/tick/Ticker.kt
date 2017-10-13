@@ -10,20 +10,8 @@ import ktx.math.plus
 import ktx.log.*
 import kotlin.system.measureTimeMillis
 
-val tickSpeed = 0.25f
-
-class Ticker() : IntervalSystem(tickSpeed) {
-    val branches = mapperFor<Branch>()
-    val genetics = mapperFor<Genetic>()
-    val healths = mapperFor<Health>()
-    val consumers = mapperFor<Consumer>()
-    val leafs = mapperFor<Leaf>()
-    val positions = mapperFor<Position>()
-    val producers = mapperFor<Producer>()
-
+class Ticker() : IntervalSystem(world.tickSpeed) {
     var subSystems: List<TickSubSystem> = ArrayList()
-
-    var root: Entity? = null
     var tick = 0
 
     override fun addedToEngine(engine: Engine) {
@@ -45,7 +33,7 @@ class Ticker() : IntervalSystem(tickSpeed) {
                 system.tick(tick)
             }
         }
-        if (time > 1 / tickSpeed) {
+        if (time > 1 / world.tickSpeed) {
             error { "Couldn't keep up! Tick took ${time}ms!" }
         }
     }

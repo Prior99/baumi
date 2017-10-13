@@ -1,5 +1,6 @@
-package de.cronosx.baumi.system
+package de.cronosx.baumi.system.renderer
 
+import com.badlogic.ashley.core.Engine
 import de.cronosx.baumi.component.*
 import com.badlogic.gdx.graphics.g2d.*
 import com.badlogic.ashley.core.EntitySystem
@@ -9,7 +10,7 @@ import ktx.math.*
 import ktx.log.*
 import de.cronosx.baumi.Math.*
 
-class GroundWaterRenderer(var batch: Batch) : EntitySystem() {
+class GroundWaterRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
     val buffers = mapperFor<Buffer>()
     val groundWaters = mapperFor<GroundWater>()
     val textureGroundWater = Texture("ground-water.png")
@@ -17,8 +18,7 @@ class GroundWaterRenderer(var batch: Batch) : EntitySystem() {
     val textureHeight = 360
     val textureWidth = 1080
 
-    override fun update(delta: Float) {
-        super.update(delta)
+    override fun render(delta: Float) {
         val entities = engine.entities.filter { buffers.has(it) && groundWaters.has(it) }
         if (entities.count() != 1) {
             error { "Invalid amount of entities with component `GroundWater` found." }

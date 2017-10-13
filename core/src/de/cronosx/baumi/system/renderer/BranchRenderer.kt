@@ -1,6 +1,7 @@
-package de.cronosx.baumi.system
+package de.cronosx.baumi.system.renderer
 
 import com.badlogic.ashley.core.Entity
+import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.systems.SortedIteratingSystem
 import com.badlogic.gdx.math.MathUtils.radiansToDegrees
 import com.badlogic.gdx.graphics.Texture
@@ -12,18 +13,17 @@ import de.cronosx.baumi.component.Position
 import ktx.ashley.allOf
 import ktx.ashley.mapperFor
 
-class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
-        allOf(Branch::class, Position::class).get(), GenerationComparator()) {
-    val cBranch = mapperFor<Branch>()
-    val cPosition = mapperFor<Position>()
+class BranchRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
+    val branches = mapperFor<Branch>()
+    val positions = mapperFor<Position>()
     val branchTexture = Texture("branch.png")
     val trunkTexture = Texture("trunk.png")
     val energyTexture = Texture("energy.png")
     var time = 0f
 
-    override fun processEntity(entity: Entity, delta: Float) {
-        val position = cPosition.get(entity).position
-        val branch = cBranch.get(entity)
+    fun processEntity(entity: Entity, delta: Float) {
+        val position = positions.get(entity).position
+        val branch = branches.get(entity)
         val tex = if (branch.generation == 0) trunkTexture else branchTexture
         val sprite = Sprite(tex)
         sprite.setScale(branch.length / branchTexture.width)
@@ -42,11 +42,8 @@ class BranchRenderer(var batch: Batch) : SortedIteratingSystem(
         time += delta
     }
 
-    class GenerationComparator : Comparator<Entity> {
-        val cBranch = mapperFor<Branch>()
-
-        override fun compare(e1: Entity, e2: Entity): Int {
-            return cBranch.get(e1).generation - cBranch.get(e2).generation
-        }
+    override fun render(delta: Float) {
+        val entities = engine.entities.filter{ branches.has(it) && positions.has(it) }
+        entities.forEach{ processEntity(it, delta) }
     }
 }
