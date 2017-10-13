@@ -1,14 +1,29 @@
 package de.cronosx.baumi.system.tick
 
 import com.badlogic.ashley.core.Engine
-import com.badlogic.ashley.systems.IntervalSystem
+import com.badlogic.ashley.core.EntitySystem
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.data.*
 import ktx.math.plus
 import ktx.log.*
 import kotlin.system.measureTimeMillis
 
-class Ticker() : IntervalSystem(if (debug.extremeSpeed) 0.001f else world.tickSpeed) {
+abstract class CustomIntervalSystem(var interval: Float) : EntitySystem(0) {
+	var accumulator = 0f;
+
+	override fun update (deltaTime: Float) {
+		accumulator += deltaTime;
+
+		while (accumulator >= interval) {
+			accumulator -= interval;
+			updateInterval();
+		}
+	}
+
+	abstract fun updateInterval();
+}
+
+class Ticker() : CustomIntervalSystem(world.tickSpeed) {
     var subSystems: List<TickSubSystem> = ArrayList()
     var tick = 0
 
@@ -23,6 +38,10 @@ class Ticker() : IntervalSystem(if (debug.extremeSpeed) 0.001f else world.tickSp
             EnergyDistribution(engine),
             Fruits(engine)
         )
+    }
+
+    override fun update(delta: Float) {
+        super.update(if (debug.extremeSpeed) 100f * delta else delta)
     }
 
     override fun updateInterval() {

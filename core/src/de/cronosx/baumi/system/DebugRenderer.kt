@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.*
 import com.badlogic.gdx.graphics.g2d.*
 import com.badlogic.ashley.core.EntitySystem
 import de.cronosx.baumi.component.*
+import de.cronosx.baumi.data.debug
 import de.cronosx.baumi.system.tick.*
 import de.cronosx.baumi.Math.*
 import ktx.ashley.mapperFor
@@ -16,6 +17,7 @@ class DebugRenderer(var shapeRenderer: ShapeRenderer) : EntitySystem() {
     val fruits = mapperFor<Fruit>()
 
     override fun update(delta: Float) {
+        if (!debug.enableDebugRendering) return
         for (entity in engine.entities) {
             if (!positions.has(entity)) {
                 continue

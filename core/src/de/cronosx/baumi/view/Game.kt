@@ -67,15 +67,21 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         engine.addSystem(Wind())
         engine.addSystem(events)
         engine.addSystem(Clouds())
-        if (!debug.disableRendering) {
-            engine.addSystem(Renderer(batch))
-        }
-        if (debug.enableDebugRendering) {
-            engine.addSystem(DebugRenderer(shapeRenderer))
-        }
+        engine.addSystem(Renderer(batch))
+        engine.addSystem(DebugRenderer(shapeRenderer))
         stage.addActor(view)
         stage.addActor(ui)
         Gdx.input.inputProcessor = stage
+
+        view.setKeyboardFocus()
+        view.onKey {  key -> 
+            when(key) {
+                'r' -> debug.disableRendering = !debug.disableRendering
+                'd' -> debug.enableDebugRendering = !debug.enableDebugRendering
+                'b' -> debug.infiniteBuffers = !debug.infiniteBuffers
+                's' -> debug.extremeSpeed = !debug.extremeSpeed
+            }
+        }
     }
 
     override fun render(delta: Float) {

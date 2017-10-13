@@ -3,11 +3,11 @@ package de.cronosx.baumi.data
 import com.badlogic.gdx.Application.*
 
 data class Debug (
-    val disableRendering: Boolean,
-    val enableDebugRendering: Boolean,
-    val logLevel: Int,
-    val extremeSpeed: Boolean,
-    val infiniteBuffers: Boolean
+    var disableRendering: Boolean,
+    var enableDebugRendering: Boolean,
+    var logLevel: Int,
+    var extremeSpeed: Boolean,
+    var infiniteBuffers: Boolean
 )
 
 val debug = Debug(

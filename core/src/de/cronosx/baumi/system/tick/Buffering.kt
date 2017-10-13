@@ -26,18 +26,23 @@ class Buffering(engine: Engine) : TickSubSystem(engine) {
 
     override fun tick(number: Int) {
         for (entity in engine.entities) {
-            if (!buffers.has(entity) || !producers.has(entity)) {
-                continue
-            }
-            val buffer = buffers.get(entity)
-            val producer = producers.get(entity)
-            if (buffer.current > 0f) {
-                producer.rate = maxOf(buffer.energyYield, buffer.current)
-                if (!debug.infiniteBuffers) {
-                    buffer.current = maxOf(0f, buffer.current - buffer.energyYield)
+            if (debug.infiniteBuffers) {
+                if (buffers.has(entity)) {
+                    val buffer = buffers.get(entity);
+                    buffer.current = buffer.max
                 }
             } else {
-                producer.rate = 0f
+                if (!buffers.has(entity) || !producers.has(entity)) {
+                    continue
+                }
+                val buffer = buffers.get(entity)
+                val producer = producers.get(entity)
+                if (buffer.current > 0f) {
+                    producer.rate = maxOf(buffer.energyYield, buffer.current)
+                    buffer.current = maxOf(0f, buffer.current - buffer.energyYield)
+                } else {
+                    producer.rate = 0f
+                }
             }
         }
     }
