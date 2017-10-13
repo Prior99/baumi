@@ -108,10 +108,10 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 current = max
             }
             with<Consumer> {
-                maxEnergy = parentConsumer.maxEnergy * parentGenetic.dna.energy.falloff * lerp(0.9f, 1.1f, Math.random().toFloat())
+                maxEnergy = parentConsumer.maxEnergy * parentGenetic.dna.energy.falloff * lerp(0.8f, 1.5f, Math.random().toFloat())
                 minEnergy = maxEnergy / 2f
                 energy = minEnergy
-                rate = parentConsumer.rate * parentGenetic.dna.energy.falloff * lerp(0.9f, 1.1f, Math.random().toFloat())
+                rate = parentConsumer.rate * parentGenetic.dna.energy.falloff * lerp(0.8f, 1.5f, Math.random().toFloat())
             }
         }
         parentBranch.children.add(newBranch)
@@ -194,8 +194,9 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 parent = entity
             }
             with<Consumer> {
-                maxEnergy = leafsGene.maxEnergy
-                rate = leafsGene.upkeep
+                maxEnergy = leafsGene.maxEnergy * lerp(0.9f, 1.2f, Math.random().toFloat())
+                minEnergy = maxEnergy * 0.5f
+                rate = leafsGene.upkeep * lerp(0.9f, 1.2f, Math.random().toFloat())
             }
             with<Health> {
                 current = leafsGene.maxHealth
