@@ -3,10 +3,7 @@ package de.cronosx.baumi.system
 import de.cronosx.baumi.component.*
 import com.badlogic.gdx.graphics.g2d.*
 import com.badlogic.ashley.core.EntitySystem
-import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.graphics.Texture
-import de.cronosx.baumi.appHeight
-import de.cronosx.baumi.appWidth
 import ktx.ashley.*
 import ktx.math.*
 import ktx.log.*
@@ -28,7 +25,7 @@ class GroundWaterRenderer(var batch: Batch) : EntitySystem() {
             return
         }
         val buffer = buffers.get(entities[0])
-        val x = minOf(10, Math.round(frames * (buffer.current / buffer.max).toDouble()).toInt())
+        val x = minOf(9, Math.round(frames * (buffer.current / buffer.max).toDouble()).toInt())
         val texture = TextureRegion(textureGroundWater, x * textureWidth, 0, textureWidth, textureHeight)
         val sprite = Sprite(texture)
         sprite.setPosition(0f, 0f)

@@ -11,6 +11,7 @@ import ktx.app.KtxGame
 import ktx.inject.Context
 import ktx.async.enableKtxCoroutines
 import de.cronosx.baumi.view.Game
+import ktx.scene2d.Scene2DSkin
 
 val appWidth = 1080f
 val appHeight = 1920f
@@ -25,6 +26,8 @@ class Application : KtxGame<Screen>() {
             val viewport = FitViewport(appWidth, appHeight)
             bindSingleton<Viewport>(viewport)
             bindSingleton(Stage(inject(), inject()))
+            bindSingleton(createSkin())
+            Scene2DSkin.defaultSkin = inject()
             bindSingleton(this@Application)
             bindSingleton(Game(inject(), inject()))
         }
