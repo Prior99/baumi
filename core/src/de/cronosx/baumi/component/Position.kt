@@ -4,9 +4,20 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.ashley.core.Component
 import ktx.math.*
 import ktx.ashley.*
-import kotlinx.serialization.*
+import com.github.salomonbrys.kotson.*
+import com.google.gson.JsonObject
 
-@Serializable
 class Position(
     var position: Vector2 = vec2(0f, 0f)
-) : Component
+) : SerializableComponent() {
+    constructor(obj: JsonObject) : this(
+        vec2(obj["position"].array[0].float, obj["position"].array[1].float)
+    ) {}
+
+    override fun toJson(): JsonObject {
+        return jsonObject(
+            "type" to "Position",
+            "position" to jsonArray(position.x, position.y)
+        )
+    }
+}

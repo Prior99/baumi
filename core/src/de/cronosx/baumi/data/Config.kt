@@ -6,7 +6,8 @@ data class Config (
     val maxWater: Float,
     val waterEnergyYield: Float,
     val wateringCanCapacity: Float,
-    val tickSpeed: Float
+    val tickSpeed: Float,
+    val serializationInterval: Float
 )
 
 val config = Config(
@@ -15,5 +16,6 @@ val config = Config(
     maxWater = 1000f,
     waterEnergyYield = 8f,
     wateringCanCapacity = 50f,
-    tickSpeed = 2f
+    tickSpeed = 2f,
+    serializationInterval = 1f
 )

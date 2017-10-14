@@ -1,16 +1,39 @@
 package de.cronosx.baumi.data
 
-import kotlinx.serialization.*
+import java.util.UUID
+import com.github.salomonbrys.kotson.*
+import com.google.gson.JsonObject
 
-@Serializable
-data class World (
+class World (
     var tick: Int,
     var lastTick: Double,
-    var windDirection: Float
-)
+    var windDirection: Float,
+    var id: String,
+    var name: String
+) {
+    constructor(obj: JsonObject) : this(
+        obj["tick"].int,
+        obj["lastTick"].double,
+        obj["windDirection"].float,
+        obj["id"].string,
+        obj["name"].string
+    ) {}
 
-val world = World(
+    fun toJson(): JsonObject {
+        return jsonObject(
+            "tick" to tick,
+            "lastTick" to lastTick,
+            "windDirection" to windDirection,
+            "id" to id,
+            "name" to name
+        )
+    }
+}
+
+var world = World(
     tick = 0,
     lastTick = System.currentTimeMillis().toDouble() / 1000.0,
-    windDirection = Math.random().toFloat() * 20f - 10f
+    windDirection = Math.random().toFloat() * 20f - 10f,
+    id = UUID.randomUUID().toString(),
+    name = "Default tree"
 )

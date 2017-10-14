@@ -1,22 +1,21 @@
 package de.cronosx.baumi.component
 
 import com.badlogic.ashley.core.Component
-import ktx.ashley.*
-import de.cronosx.baumi.data.*
+import java.util.UUID
 import com.github.salomonbrys.kotson.*
 import com.google.gson.JsonObject
 
-class Genetic(
-    var dna: DNA = defaultDna
+class Uuid(
+    val id: String = UUID.randomUUID().toString()
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
-        defaultDna
+        obj["id"].string
     ) {}
 
     override fun toJson(): JsonObject {
         return jsonObject(
-            "type" to "Genetic",
-            "dna" to "TODO"
+            "type" to "Uuid",
+            "id" to id
         )
     }
 }

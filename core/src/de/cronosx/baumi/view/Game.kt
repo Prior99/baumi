@@ -69,6 +69,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         engine.addSystem(Clouds())
         engine.addSystem(Renderer(batch))
         engine.addSystem(DebugRenderer(shapeRenderer))
+        engine.addSystem(SerializationSystem())
         stage.addActor(view)
         stage.addActor(ui)
         Gdx.input.inputProcessor = stage
