@@ -9,18 +9,18 @@ import ktx.log.*
 import kotlin.system.measureTimeMillis
 
 abstract class CustomIntervalSystem(var interval: Float) : EntitySystem(0) {
-	var accumulator = 0f;
+    var accumulator = 0f;
 
-	override fun update (deltaTime: Float) {
-		accumulator += deltaTime;
+    override fun update (deltaTime: Float) {
+        accumulator += deltaTime;
 
-		while (accumulator >= interval) {
-			accumulator -= interval;
-			updateInterval();
-		}
-	}
+        while (accumulator >= interval) {
+            accumulator -= interval;
+            updateInterval();
+        }
+    }
 
-	abstract fun updateInterval();
+    abstract fun updateInterval();
 }
 
 class Ticker() : CustomIntervalSystem(world.tickSpeed) {
