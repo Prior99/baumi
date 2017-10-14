@@ -16,9 +16,9 @@ class Buffering(engine: Engine) : TickSubSystem(engine) {
                 rate = 0f
             }
             with<Buffer> {
-                max = world.maxWater
-                current = world.initialWater
-                energyYield = world.waterEnergyYield
+                max = config.maxWater
+                current = config.initialWater
+                energyYield = config.waterEnergyYield
             }
             with<GroundWater> {}
         }

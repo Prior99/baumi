@@ -1,6 +1,6 @@
 package de.cronosx.baumi.data
 
-data class World (
+data class Config (
     val groundHeight: Float,
     val initialWater: Float,
     val maxWater: Float,
@@ -9,11 +9,11 @@ data class World (
     val tickSpeed: Float
 )
 
-val world = World(
+val config = Config(
     groundHeight = 360f,
     initialWater = 100f,
     maxWater = 1000f,
     waterEnergyYield = 8f,
     wateringCanCapacity = 50f,
-    tickSpeed = 0.5f
+    tickSpeed = 2f
 )

@@ -8,24 +8,33 @@ import ktx.math.plus
 import ktx.log.*
 import kotlin.system.measureTimeMillis
 
-abstract class CustomIntervalSystem(var interval: Float) : EntitySystem(0) {
-    var accumulator = 0f;
+fun Double.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
 
-    override fun update (deltaTime: Float) {
-        accumulator += deltaTime;
-
-        while (accumulator >= interval) {
-            accumulator -= interval;
-            updateInterval();
+abstract class ReplayIntervalSystem(var interval: Float) : EntitySystem(0) {
+    override fun update(_delta: Float) {
+        val now = System.currentTimeMillis().toDouble() / 1000.0;
+        var timePassed = now - world.lastTick
+        val ticksToCalculate = Math.floor(timePassed / interval).toInt()
+        if (ticksToCalculate > 1) {
+            info { "Calculating $ticksToCalculate ticks." }
+        }
+        val calculationTime = measureTimeMillis {
+            while (timePassed >= interval) {
+                timePassed -= interval
+                updateInterval();
+                world.lastTick = now
+            }
+        }.toDouble() / 1000.0
+        if (calculationTime > 1f / config.tickSpeed || ticksToCalculate > 1) {
+            info { "Calculating of $ticksToCalculate tick(s) took ${calculationTime.format(2)}s." }
         }
     }
 
     abstract fun updateInterval();
 }
 
-class Ticker() : CustomIntervalSystem(world.tickSpeed) {
+class Ticker() : ReplayIntervalSystem(1 / config.tickSpeed) {
     var subSystems: List<TickSubSystem> = ArrayList()
-    var tick = 0
 
     override fun addedToEngine(engine: Engine) {
         subSystems = listOf(
@@ -46,13 +55,13 @@ class Ticker() : CustomIntervalSystem(world.tickSpeed) {
 
     override fun updateInterval() {
         val time = measureTimeMillis {
-            tick++
+            world.tick++
             for (system in subSystems) {
-                system.tick(tick)
+                system.tick(world.tick)
             }
-        }
-        if (time > 1 / world.tickSpeed) {
-            error { "Couldn't keep up! Tick took ${time}ms!" }
+        }.toDouble() / 1000.0
+        if (time > 1f / config.tickSpeed) {
+            error { "Couldn't keep up! Tick took ${time.format(2)}s!" }
         }
     }
 }

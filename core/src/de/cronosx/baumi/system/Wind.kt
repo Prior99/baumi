@@ -12,21 +12,20 @@ class Wind() : IteratingSystem(
         allOf(Movable::class, Position::class).get()) {
     val movables = mapperFor<Movable>()
     val positions = mapperFor<Position>()
-    var direction = Math.random().toFloat() * 20f - 10f
 
     override fun processEntity(entity: Entity, delta: Float) {
         val position = positions.get(entity).position
         val movable = movables.get(entity)
-        if (position.y < world.groundHeight || movable.fixed) {
+        if (position.y < config.groundHeight || movable.fixed) {
             return
         }
-        position.x += (delta * direction) / (movable.weight / 100f)
+        position.x += (delta * world.windDirection) / (movable.weight / 100f)
     }
 
     override fun update(delta: Float) {
         super.update(delta)
-        direction += delta * Math.random().toFloat() * 0.3f
-        direction = minOf(direction, 10f)
-        direction = maxOf(direction, 10f)
+        world.windDirection += delta * Math.random().toFloat() * 0.3f
+        world.windDirection = minOf(world.windDirection, 10f)
+        world.windDirection = maxOf(world.windDirection, 10f)
     }
 }

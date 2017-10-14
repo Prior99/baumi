@@ -15,7 +15,7 @@ class Events() : EntitySystem() {
         val entities = engine.entities.filter { groundWaters.has(it) && buffers.has(it) }
         for (entity in entities) {
             val buffer = buffers.get(entity)
-            buffer.current = minOf(buffer.max, buffer.current + world.wateringCanCapacity)
+            buffer.current = minOf(buffer.max, buffer.current + config.wateringCanCapacity)
         }
     }
 }
