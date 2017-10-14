@@ -3,7 +3,9 @@ package de.cronosx.baumi.component
 import com.badlogic.ashley.core.Component
 import ktx.ashley.*
 import de.cronosx.baumi.data.*
+import kotlinx.serialization.*
 
+@Serializable
 class Consumer(
     var maxEnergy: Float = 0f,
     var minEnergy: Float = 0f,
