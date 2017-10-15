@@ -24,6 +24,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val engine = PooledEngine()
     var uiVisible = false
     val events = Events()
+    val serializationSystem = SerializationSystem()
     val shapeRenderer = ShapeRenderer()
 
     val view = table {
@@ -69,7 +70,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         engine.addSystem(Clouds())
         engine.addSystem(Renderer(batch))
         engine.addSystem(DebugRenderer(shapeRenderer))
-        engine.addSystem(SerializationSystem())
+        engine.addSystem(serializationSystem)
         stage.addActor(view)
         stage.addActor(ui)
         Gdx.input.inputProcessor = stage

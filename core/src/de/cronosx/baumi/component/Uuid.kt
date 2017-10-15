@@ -6,7 +6,7 @@ import com.github.salomonbrys.kotson.*
 import com.google.gson.JsonObject
 
 class Uuid(
-    val id: String = UUID.randomUUID().toString()
+    var id: String = UUID.randomUUID().toString()
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
         obj["id"].string

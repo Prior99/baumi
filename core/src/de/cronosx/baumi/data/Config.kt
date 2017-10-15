@@ -12,10 +12,10 @@ data class Config (
 
 val config = Config(
     groundHeight = 360f,
-    initialWater = 100f,
-    maxWater = 1000f,
-    waterEnergyYield = 8f,
-    wateringCanCapacity = 50f,
+    initialWater = 180000f,
+    maxWater = 360000f,
+    waterEnergyYield = 5f,
+    wateringCanCapacity = 10000f,
     tickSpeed = 2f,
-    serializationInterval = 1f
+    serializationInterval = 10f
 )

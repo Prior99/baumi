@@ -9,21 +9,6 @@ class Buffering(engine: Engine) : TickSubSystem(engine) {
     val buffers = mapperFor<Buffer>()
     val producers = mapperFor<Producer>()
 
-    init {
-        // Ground water.
-        engine.entity {
-            with<Producer> {
-                rate = 0f
-            }
-            with<Buffer> {
-                max = config.maxWater
-                current = config.initialWater
-                energyYield = config.waterEnergyYield
-            }
-            with<GroundWater> {}
-        }
-    }
-
     override fun tick(number: Int) {
         for (entity in engine.entities) {
             if (debug.infiniteBuffers) {

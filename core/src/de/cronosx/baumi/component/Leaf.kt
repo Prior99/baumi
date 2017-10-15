@@ -6,6 +6,7 @@ import com.badlogic.ashley.core.Engine
 import ktx.ashley.*
 import com.github.salomonbrys.kotson.*
 import com.google.gson.JsonObject
+import ktx.log.*
 
 class Leaf(
     var rotation: Float = 0f,
@@ -17,7 +18,7 @@ class Leaf(
         obj["rotation"].float,
         obj["generation"].int,
         obj["positionAlongBranch"].float,
-        engine.entities.find{ uuids.get(it).id == obj["parent"].string }
+        engine.entities.find{ uuids.get(it).id == obj["parent"].nullString }
     ) {}
 
     override fun toJson(): JsonObject {
@@ -26,7 +27,7 @@ class Leaf(
             "rotation" to rotation,
             "generation" to generation,
             "positionAlongBranch" to positionAlongBranch,
-            "parent" to uuids.get(parent).id
+            "parent" to if (parent != null) uuids.get(parent).id else null
         )
     }
 }

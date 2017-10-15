@@ -18,7 +18,7 @@ class Fruit(
         obj["rotation"].float,
         obj["generation"].int,
         obj["positionAlongBranch"].float,
-        engine.entities.find{ uuids.get(it).id == obj["parent"].string },
+        engine.entities.find{ uuids.get(it).id == obj["parent"].nullString },
         obj["age"].int
     ) {}
 
@@ -28,7 +28,7 @@ class Fruit(
             "rotation" to rotation,
             "generation" to generation,
             "positionAlongBranch" to positionAlongBranch,
-            "parent" to uuids.get(parent).id,
+            "parent" to if (parent != null) uuids.get(parent).id else null,
             "age" to age
         )
     }

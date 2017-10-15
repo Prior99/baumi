@@ -48,35 +48,6 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
     val positions = mapperFor<Position>()
     val roots = mapperFor<Root>()
 
-    init {
-        // Create the root tree branch.
-        engine.entity {
-            with<Position> {
-                position = vec2(appWidth/ 2f, 360f)
-            }
-            with<Branch> {
-                rotation = defaultDna.rotation.initial
-                length = defaultDna.length.initial
-                maxLength = defaultDna.length.max
-                children = ArrayList()
-            }
-            with<Genetic> {
-                dna = defaultDna
-            }
-            with<Health> {
-                max = defaultDna.health.max
-                current = defaultDna.health.max
-            }
-            with<Consumer> {
-                maxEnergy = defaultDna.energy.max
-                minEnergy = maxEnergy / 2f
-                energy = minEnergy
-                rate = defaultDna.energy.upkeep
-            }
-            with<Root> {}
-        }
-    }
-
     /**
      * Create a new branch forked from the `parent` entity with the given rotations.
      */

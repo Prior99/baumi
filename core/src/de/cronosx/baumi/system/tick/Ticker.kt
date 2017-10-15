@@ -19,9 +19,13 @@ abstract class ReplayIntervalSystem(var interval: Float) : EntitySystem(0) {
             info { "Calculating $ticksToCalculate ticks." }
         }
         val calculationTime = measureTimeMillis {
-            while (timePassed >= interval) {
+            var ticked = false
+            while (timePassed >= interval || (debug.extremeSpeed && !ticked)) {
                 timePassed -= interval
                 updateInterval();
+                ticked = true
+            }
+            if (ticked) {
                 world.lastTick = now
             }
         }.toDouble() / 1000.0

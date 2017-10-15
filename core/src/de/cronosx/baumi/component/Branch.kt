@@ -20,7 +20,7 @@ class Branch(
         obj["maxLength"].float,
         obj["generation"].int,
         obj["children"].array.map{ child ->
-            engine.entities.find{ uuids.get(it).id == child["id"].string } as Entity
+            engine.entities.find{ uuids.get(it).id == child.string } as Entity
         }.toMutableList()
     ) {}
 
