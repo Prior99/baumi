@@ -1,6 +1,5 @@
 package de.cronosx.baumi.component
 
-import com.badlogic.ashley.core.Component
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.Engine
 import ktx.ashley.*
@@ -18,7 +17,7 @@ class Fruit(
         obj["rotation"].float,
         obj["generation"].int,
         obj["positionAlongBranch"].float,
-        engine.entities.find{ uuids.get(it).id == obj["parent"].nullString },
+        engine.entities.find { uuids.get(it).id == obj["parent"].nullString },
         obj["age"].int
     ) {}
 

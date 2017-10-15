@@ -2,7 +2,6 @@ package de.cronosx.baumi.component
 
 import com.github.salomonbrys.kotson.*
 import com.google.gson.JsonObject
-import com.badlogic.ashley.core.Component
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.Engine
 import ktx.ashley.*
@@ -19,8 +18,8 @@ class Branch(
         obj["length"].float,
         obj["maxLength"].float,
         obj["generation"].int,
-        obj["children"].array.map{ child ->
-            engine.entities.find{ uuids.get(it).id == child.string } as Entity
+        obj["children"].array.map { child ->
+            engine.entities.find { uuids.get(it).id == child.string } as Entity
         }.toMutableList()
     ) {}
 
@@ -31,7 +30,7 @@ class Branch(
             "length" to length,
             "maxLength" to maxLength,
             "generation" to generation,
-            "children" to jsonArray(children.map{ uuids.get(it).id })
+            "children" to jsonArray(children.map { uuids.get(it).id })
         )
     }
 }

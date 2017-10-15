@@ -76,8 +76,8 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         Gdx.input.inputProcessor = stage
 
         view.setKeyboardFocus()
-        view.onKey {  key -> 
-            when(key) {
+        view.onKey { key ->
+            when (key) {
                 'r' -> debug.disableRendering = !debug.disableRendering
                 'd' -> debug.enableDebugRendering = !debug.enableDebugRendering
                 'b' -> debug.infiniteBuffers = !debug.infiniteBuffers

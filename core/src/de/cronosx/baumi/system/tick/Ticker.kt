@@ -12,7 +12,7 @@ fun Double.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
 
 abstract class ReplayIntervalSystem(var interval: Float) : EntitySystem(0) {
     override fun update(_delta: Float) {
-        val now = System.currentTimeMillis().toDouble() / 1000.0;
+        val now = System.currentTimeMillis().toDouble() / 1000.0
         var timePassed = now - world.lastTick
         val ticksToCalculate = Math.floor(timePassed / interval).toInt()
         if (ticksToCalculate > 1) {
@@ -22,7 +22,7 @@ abstract class ReplayIntervalSystem(var interval: Float) : EntitySystem(0) {
             var ticked = false
             while (timePassed >= interval || (debug.extremeSpeed && !ticked)) {
                 timePassed -= interval
-                updateInterval();
+                updateInterval()
                 ticked = true
             }
             if (ticked) {
@@ -34,7 +34,7 @@ abstract class ReplayIntervalSystem(var interval: Float) : EntitySystem(0) {
         }
     }
 
-    abstract fun updateInterval();
+    abstract fun updateInterval()
 }
 
 class Ticker() : ReplayIntervalSystem(1 / config.tickSpeed) {

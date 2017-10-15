@@ -9,7 +9,7 @@ import ktx.ashley.mapperFor
 val uuids = mapperFor<Uuid>()
 
 fun deserializeComponent(obj: JsonObject, engine: Engine): Component? {
-    return when(obj["type"].string) {
+    return when (obj["type"].string) {
         "Age" -> Age(obj)
         "Branch" -> Branch(obj, engine)
         "Buffer" -> Buffer(obj)

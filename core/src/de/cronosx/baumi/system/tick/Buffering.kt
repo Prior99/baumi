@@ -13,7 +13,7 @@ class Buffering(engine: Engine) : TickSubSystem(engine) {
         for (entity in engine.entities) {
             if (debug.infiniteBuffers) {
                 if (buffers.has(entity)) {
-                    val buffer = buffers.get(entity);
+                    val buffer = buffers.get(entity)
                     buffer.current = buffer.max
                 }
             } else {

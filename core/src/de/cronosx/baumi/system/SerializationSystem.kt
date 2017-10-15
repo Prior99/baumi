@@ -1,12 +1,9 @@
 package de.cronosx.baumi.system
 
 import com.github.salomonbrys.kotson.*
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import de.cronosx.baumi.component.*
 import com.badlogic.ashley.systems.IntervalSystem
-import com.badlogic.ashley.core.Component
-import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.Engine
 import com.badlogic.gdx.Gdx
 import de.cronosx.baumi.data.*
@@ -77,30 +74,30 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
         info { "Game is at tick ${world.tick}" }
         // Uuids have to be deserialized first.
         for (entityObj in obj["entities"].array) {
-            val entity = engine.entity{
-                with<Uuid>{
+            val entity = engine.entity {
+                with<Uuid> {
                     id = entityObj["id"].string
                 }
             }
         }
         for (entityObj in obj["entities"].array) {
             val id = entityObj["id"].string
-            val entity = engine.entities.find{ uuids.get(it).id == id }
+            val entity = engine.entities.find { uuids.get(it).id == id }
             if (entity == null) {
-                error{ "Unable to find entity with id \"$id\" which was just created." }
+                error { "Unable to find entity with id \"$id\" which was just created." }
                 continue
             }
             entityObj["components"].array
-                .map{ deserializeComponent(it.obj, engine) }
+                .map { deserializeComponent(it.obj, engine) }
                 .filter {
                     if (it == null) {
-                        error{ "Encountered undeserializable component." }
+                        error { "Encountered undeserializable component." }
                     }
                     it != null
                 }
-                .forEach{ entity?.add(it) }
+                .forEach { entity?.add(it) }
         }
-        info { "Loaded ${engine.entities.count()} entities."}
+        info { "Loaded ${engine.entities.count()} entities." }
     }
 
     fun save() {
@@ -109,10 +106,10 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
                 entity.add(Uuid())
             }
         }
-        val entities = jsonArray(engine.entities.map{ entity ->
+        val entities = jsonArray(engine.entities.map { entity ->
             jsonObject(
                 "components" to jsonArray(entity.getComponents()
-                    .filter{
+                    .filter {
                         if (!(it is SerializableComponent)) {
                             error { "Component $it is not serializable." }
                         }
@@ -120,7 +117,7 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
                         // The id's will be stored seperately.
                         !(it is Uuid)
                     }
-                    .map{ component ->
+                    .map { component ->
                         (component as SerializableComponent).toJson()
                     }
                 ),
@@ -137,7 +134,7 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
         val path = "trees/${world.id}"
         val file = Gdx.files.local(path)
         file.writeString(json, false)
-        info { "Wrote ${json.length} characters to ${path}."}
+        info { "Wrote ${json.length} characters to $path." }
     }
 
     override fun updateInterval() {

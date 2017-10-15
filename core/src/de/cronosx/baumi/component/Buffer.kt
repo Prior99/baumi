@@ -1,6 +1,5 @@
 package de.cronosx.baumi.component
 
-import com.badlogic.ashley.core.Component
 import com.github.salomonbrys.kotson.*
 import com.google.gson.JsonObject
 

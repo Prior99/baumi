@@ -1,7 +1,6 @@
 package de.cronosx.baumi.component
 
 import com.badlogic.gdx.math.Vector2
-import com.badlogic.ashley.core.Component
 import ktx.math.*
 import ktx.ashley.*
 import com.github.salomonbrys.kotson.*

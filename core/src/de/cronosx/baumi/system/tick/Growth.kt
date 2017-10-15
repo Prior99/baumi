@@ -3,7 +3,6 @@ package de.cronosx.baumi.system.tick
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector2
-import de.cronosx.baumi.appWidth
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.data.*
 import ktx.ashley.entity
