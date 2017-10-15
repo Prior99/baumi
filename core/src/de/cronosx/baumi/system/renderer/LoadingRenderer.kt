@@ -22,7 +22,6 @@ class LoadingRenderer(val batch: Batch, engine: Engine, val ticker: Ticker) : Re
             return
         }
         val progress = maxOf(ticker.replayed.toFloat() / ticker.totalReplayTicks.toFloat(), 0.05f)
-        info { "$progress" }
         batch.draw(backgroundTexture, 0f, 0f)
         // Draw the background of the bar.
         val progressBg = TextureRegion(progressTexture, 0, textureHeight, textureWidth, textureHeight)
