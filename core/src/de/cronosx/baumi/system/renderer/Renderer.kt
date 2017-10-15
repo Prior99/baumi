@@ -6,10 +6,11 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.*
 import de.cronosx.baumi.data.debug
 import de.cronosx.baumi.component.*
+import de.cronosx.baumi.system.tick.Ticker
 import de.cronosx.baumi.Math.*
 import ktx.log.*
 
-class Renderer(var batch: Batch) : EntitySystem() {
+class Renderer(var batch: Batch, val ticker: Ticker) : EntitySystem() {
     val textureBackground = Texture("background.png")
     val textureGrass = Texture("grass.png")
     var subSystems: List<RenderSubSystem> = ArrayList()
@@ -20,7 +21,8 @@ class Renderer(var batch: Batch) : EntitySystem() {
             CloudRenderer(batch, engine),
             GroundWaterRenderer(batch, engine),
             LeafRenderer(batch, engine),
-            FruitRenderer(batch, engine)
+            FruitRenderer(batch, engine),
+            LoadingRenderer(batch, engine, ticker)
         )
     }
 

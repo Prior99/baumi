@@ -26,6 +26,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val events = Events()
     val serializationSystem = SerializationSystem()
     val shapeRenderer = ShapeRenderer()
+    val ticker = Ticker()
 
     val view = table {
         setFillParent(true)
@@ -63,12 +64,12 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     }
 
     override fun show() {
-        engine.addSystem(Ticker())
+        engine.addSystem(ticker)
         engine.addSystem(Gravity())
         engine.addSystem(Wind())
         engine.addSystem(events)
         engine.addSystem(Clouds())
-        engine.addSystem(Renderer(batch))
+        engine.addSystem(Renderer(batch, ticker))
         engine.addSystem(DebugRenderer(shapeRenderer))
         engine.addSystem(serializationSystem)
         stage.addActor(view)
