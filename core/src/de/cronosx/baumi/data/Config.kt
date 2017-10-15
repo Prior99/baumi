@@ -8,7 +8,11 @@ data class Config (
     val wateringCanCapacity: Float,
     val tickSpeed: Float,
     val serializationInterval: Float,
-    val maxTicksPerInterval: Int
+    val maxTicksPerInterval: Int,
+    val maxCloudContent: Float,
+    val minCloudContent: Float,
+    val clouds: Int,
+    val dropContent: Float
 )
 
 val config = Config(
@@ -19,5 +23,9 @@ val config = Config(
     wateringCanCapacity = 10000f,
     tickSpeed = 2f,
     serializationInterval = 10f,
-    maxTicksPerInterval = 10
+    maxTicksPerInterval = 10,
+    maxCloudContent = 20000f,
+    minCloudContent = 2000f,
+    clouds = 4,
+    dropContent = 50f
 )

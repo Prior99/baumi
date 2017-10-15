@@ -36,4 +36,3 @@ class LoadingRenderer(val batch: Batch, engine: Engine, val ticker: Ticker) : Re
         fgSprite.draw(batch)
     }
 }
-

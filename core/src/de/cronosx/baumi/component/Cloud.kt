@@ -5,16 +5,16 @@ import com.github.salomonbrys.kotson.*
 import com.google.gson.JsonObject
 
 class Cloud(
-    var index: Int = 0
+    var content: Float = 0f
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
-        obj["index"].int
+        obj["content"].float
     ) {}
 
     override fun toJson(): JsonObject {
         return jsonObject(
             "type" to "Cloud",
-            "index" to index
+            "content" to content
         )
     }
 }
