@@ -35,12 +35,6 @@ class LoadingRenderer(val batch: Batch, engine: Engine, val ticker: Ticker) : Re
         fgSprite.setCenter(appWidth / 2f, appHeight / 2f)
         fgSprite.translateX(-(1f - progress) * textureWidth / 2f)
         fgSprite.draw(batch)
-        // Draw the rounded corners of the end of the bar.
-        /* val progressFgEnd = TextureRegion(progressTexture, textureWidth - 25, 0, 25, textureHeight) */
-        /* val fgEndSprite = Sprite(progressFgEnd) */
-        /* fgEndSprite.setCenter(appWidth / 2f, appHeight / 2f) */
-        /* fgEndSprite.translateX(-textureWidth / 2f + progress * textureWidth + 12f) */
-        /* fgEndSprite.draw(batch) */
     }
 }
 
