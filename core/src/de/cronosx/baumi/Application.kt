@@ -22,6 +22,7 @@ class Application : KtxGame<Screen>() {
     val context = Context()
 
     override fun create () {
+        Gdx.app.setLogLevel(LOG_DEBUG)
         enableKtxCoroutines(asynchronousExecutorConcurrencyLevel = 1)
         context.register {
             bindSingleton<Batch>(SpriteBatch())
@@ -35,7 +36,6 @@ class Application : KtxGame<Screen>() {
         }
         addScreen(context.inject<Game>())
         setScreen<Game>()
-        Gdx.app.setLogLevel(debug.logLevel)
     }
 
     override fun dispose () {

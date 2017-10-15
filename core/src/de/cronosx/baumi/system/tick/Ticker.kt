@@ -97,6 +97,7 @@ class Ticker() : ReplayIntervalSystem(1 / config.tickSpeed) {
                 system.tick(world.tick)
             }
         }.toDouble() / 1000.0
+        debug { "Calculated tick ${world.tick} in ${time.format(2)}s." }
         if (time > 1f / config.tickSpeed) {
             error { "Couldn't keep up! Tick took ${time.format(2)}s!" }
         }
