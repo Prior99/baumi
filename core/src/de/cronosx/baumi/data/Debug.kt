@@ -13,7 +13,7 @@ data class Debug (
 val debug = Debug(
     disableRendering = false,
     enableDebugRendering = false,
-    logLevel = LOG_DEBUG, // LOG_INFO, LOG_DEBUG
+    logLevel = LOG_INFO, // LOG_INFO, LOG_DEBUG
     extremeSpeed = false,
     infiniteBuffers = false
 )
