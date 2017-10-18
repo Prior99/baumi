@@ -27,16 +27,29 @@ import com.badlogic.gdx.InputMultiplexer
 
 class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val engine = PooledEngine()
+    val gestureListener = GameGestureListener()
+    val input = GameInputAdapter()
+    // Create all the systems
     val events = Events()
     val serializationSystem = SerializationSystem()
     val shapeRenderer = ShapeRenderer()
     val ticker = Ticker()
-    val gestureListener = GameGestureListener()
-    val input = GameInputAdapter()
+    val rain = Rain()
+    val gravity = Gravity()
+    val wind = Wind()
+    val clouds = Clouds()
+    val renderer = Renderer(batch, ticker)
+    val debugRenderer = DebugRenderer(shapeRenderer)
 
     class GameInputAdapter : InputAdapter() {
-        override fun touchDown(x: Int, y: Int, pointer: Int, button: Int): Boolean { return false }
-        override fun touchUp(x: Int, y: Int, pointer: Int, button: Int): Boolean { return false }
+        override fun touchDown(x: Int, y: Int, pointer: Int, button: Int): Boolean {
+            rain.touchDown(x, y)
+            return false
+        }
+        override fun touchUp(x: Int, y: Int, pointer: Int, button: Int): Boolean {
+            rain.touchUp()
+            return false
+        }
     }
 
     class GameGestureListener : GestureListener {
@@ -85,14 +98,14 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
 
     override fun show() {
         engine.addSystem(ticker)
-        engine.addSystem(Gravity())
-        engine.addSystem(Wind())
+        engine.addSystem(gravity)
+        engine.addSystem(wind)
         engine.addSystem(events)
-        engine.addSystem(Clouds())
-        engine.addSystem(Renderer(batch, ticker))
-        engine.addSystem(DebugRenderer(shapeRenderer))
+        engine.addSystem(clouds)
+        engine.addSystem(renderer)
+        engine.addSystem(debugRenderer)
         engine.addSystem(serializationSystem)
-        engine.addSystem(Rain())
+        engine.addSystem(rain)
         stage.addActor(view)
         stage.addActor(ui)
         val multiplexer = InputMultiplexer()
