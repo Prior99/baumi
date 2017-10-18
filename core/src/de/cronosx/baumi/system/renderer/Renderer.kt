@@ -19,10 +19,10 @@ class Renderer(var batch: Batch, val ticker: Ticker) : EntitySystem() {
         subSystems = listOf(
             BranchRenderer(batch, engine),
             RainDropRenderer(batch, engine),
-            CloudRenderer(batch, engine),
             GroundWaterRenderer(batch, engine),
             LeafRenderer(batch, engine),
             FruitRenderer(batch, engine),
+            CloudRenderer(batch, engine),
             LoadingRenderer(batch, engine, ticker)
         )
     }

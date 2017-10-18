@@ -33,20 +33,24 @@ class Rain() : EntitySystem() {
         val cloud = engine.entities
             .filter{ clouds.has(it) && positions.has(it) }
             .find{
-                val position = positions.get(it).position
+                val position = positions.get(it).position.cpy()
                 touchPosition >= position && touchPosition <= position + size
             }
         if (cloud != null) {
             debug{ "Rain touched cloud at ${touchPosition.x},${touchPosition.y}. "}
+            // Reset time.
             timeContingent = 0f
             val movable = movables.get(cloud)
             val cloudPosition = positions.get(cloud).position
+            // Make cloud not be influenced by wind anymore.
             movable.fixed = true
+            // Store cloud and the offset to the cursor.
             current = CurrentCloud(
                     cloud,
                     offsetToCursor = touchPosition - cloudPosition
             )
-            lastPosition = cloudPosition
+            // Store the position of the cloud.
+            lastPosition = cloudPosition.cpy()
         }
     }
 
@@ -63,7 +67,7 @@ class Rain() : EntitySystem() {
             return
         }
         val position = positions.get(current!!.cloud)
-        val actualPosition = touchPosition + current!!.offsetToCursor
+        val actualPosition = touchPosition - current!!.offsetToCursor
         position.position = vec2(actualPosition.x, maxOf(actualPosition.y, config.cloudHeight))
     }
 
@@ -71,14 +75,20 @@ class Rain() : EntitySystem() {
         if (current == null) {
             return
         }
+        // Increase amount of unspent time by time passed.
         timeContingent += delta
+        // Current position of the cloud.
         val cloudPosition = positions.get(current!!.cloud).position.cpy()
+        // Calculate the amount of pixels the cloud moved since the last call.
         val moved = (lastPosition!! - cloudPosition).len()
-        val dropsPossible = FloatMath.floor(timeContingent * config.dropsPerSecond)
-        timeContingent -= dropsPossible / config.dropsPerSecond
+        // The amount of drops possible to spawn by time.
+        val dropsPerTime = FloatMath.floor(timeContingent * config.dropsPerSecond)
+        // Decrease the time contingent by the spent time.
+        timeContingent -= dropsPerTime / config.dropsPerSecond
+        // Increase the amount of drops to spawn according to the amount of pixels moved.
         val movedModifier = delta * moved * 20f
-        val dropsToSpawn = dropsPossible * movedModifier
-        info {"moved $moved, dropsPossible $dropsPossible, dropsToSpawn: $dropsToSpawn, time $timeContingent, modif $movedModifier" }
+        val dropsToSpawn = dropsPerTime * movedModifier
+        // Spawn drops.
         for(i in 0 until dropsToSpawn.toInt()) {
             val dropPosition = vec2(cloudPosition.x + Math.random().toFloat() * size.x, cloudPosition.y + size.y / 2f)
             engine.entity {
