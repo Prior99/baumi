@@ -1,7 +1,7 @@
 buildscript {
     ext {
         kotlinVersion = "1.1.50"
-        junitGradleVersion = "1.0.0"
+        junitVersion = "1.0.1"
     }
 
     repositories {
@@ -14,7 +14,7 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:2.3.0"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "org.junit.platform:junit-platform-gradle-plugin:$junitGradleVersion"
+        classpath "org.junit.platform:junit-platform-gradle-plugin:$junitVersion"
     }
 }
 
@@ -95,6 +95,7 @@ project(":core") {
     ext {
         spekVersion = "1.1.5"
         expektVersion = "0.5.0"
+        junitJupiterVersion = "5.0.0"
     }
 
     junitPlatform {
@@ -133,6 +134,11 @@ project(":core") {
         testCompile "org.jetbrains.spek:spek-api:$spekVersion"
         testCompile "com.winterbe:expekt:$expektVersion"
         testRuntime "org.jetbrains.spek:spek-junit-platform-engine:$spekVersion"
+        testCompile "org.junit.platform:junit-platform-runner:$junitVersion"
+        testCompile "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+        testCompile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
+        testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+        testCompile "org.junit.platform:junit-platform-launcher:$junitVersion"
     }
 }
 

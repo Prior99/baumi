@@ -21,7 +21,10 @@ class TestGravity : Spek({
     }
 
     describe("The Gravity system") {
+        beforeEachTest {  }
+
         it("moves entities with `Movable` down") {
+            engine.addSystem(Gravity())
             val entity = engine.entity {
                 with<Position>{ position = vec2(800f, 800f)}
                 with<Movable>{
@@ -31,7 +34,33 @@ class TestGravity : Spek({
                 }
             }
             engine.update(4f)
-            expect(positions.get(entity).position.y).to.be.equal(400f)
+            expect(positions.get(entity).position.y).equal(600f)
+        }
+
+        it("doesn't move entities with `Movable` and `fixed = true`") {
+            val entity = engine.entity {
+                with<Position>{ position = vec2(800f, 800f)}
+                with<Movable>{
+                    weight = 100f
+                    fixed = true
+                    floating = false
+                }
+            }
+            engine.update(4f)
+            expect(positions.get(entity).position.y).equal(800f)
+        }
+
+        it("doesn't move entities with `Movable` and `floating = true`") {
+            val entity = engine.entity {
+                with<Position>{ position = vec2(800f, 800f)}
+                with<Movable>{
+                    weight = 100f
+                    fixed = false
+                    floating = true
+                }
+            }
+            engine.update(4f)
+            expect(positions.get(entity).position.y).to.be.equal(800f)
         }
     }
 })
