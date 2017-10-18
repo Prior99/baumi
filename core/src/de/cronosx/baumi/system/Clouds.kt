@@ -22,7 +22,7 @@ class Clouds() : EntitySystem() {
         val cloudCount = engine.entities.filter { clouds.has(it) }.count()
         val doSpawn = Math.random().toFloat() < 1f * delta * (1f / cloudCount.toFloat())
         if (cloudCount < config.clouds && doSpawn) {
-            val x = if (world.windDirection < 0) appWidth.toFloat() else -textureWidth.toFloat() 
+            val x = if (world.windDirection < 0) appWidth.toFloat() else -textureWidth.toFloat()
             val y = appHeight.toFloat() - textureHeight.toFloat() - Math.random().toFloat() * textureHeight.toFloat()
             debug { "Only $cloudCount/${config.clouds} clouds alive. Spawning cloud at $x/$y." }
             engine.add { entity {
@@ -31,7 +31,7 @@ class Clouds() : EntitySystem() {
                 }
                 with<Cloud> {
                     content = config.minCloudContent +
-                        (config.maxCloudContent - config.minCloudContent) * Math.random().toFloat()
+                            (config.maxCloudContent - config.minCloudContent) * Math.random().toFloat()
                 }
                 with<Movable> {
                     weight = Math.random().toFloat() * 4f + 4f
@@ -46,7 +46,11 @@ class Clouds() : EntitySystem() {
                 continue
             }
             val position = positions.get(entity).position
-            if (position.x + textureWidth < -appWidth || position.x > appWidth * 2) {
+            val cloud = clouds.get(entity)
+            val remove = position.x + textureWidth < -appWidth ||
+                    position.x > appWidth * 2 ||
+                    cloud.content <= 0f
+            if (remove) {
                 engine.removeEntity(entity)
             }
         }

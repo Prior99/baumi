@@ -26,6 +26,7 @@ fun deserializeComponent(obj: JsonObject, engine: Engine): Component? {
         "Producer" -> Producer(obj)
         "Root" -> Root(obj)
         "Uuid" -> Uuid(obj)
+        "RainDrop" -> RainDrop(obj)
         else -> null
     }
 }

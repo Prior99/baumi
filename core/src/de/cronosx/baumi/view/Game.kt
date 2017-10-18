@@ -27,10 +27,10 @@ import com.badlogic.gdx.InputMultiplexer
 
 class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val engine = PooledEngine()
+    // Input.
     val gestureListener = GameGestureListener()
     val input = GameInputAdapter()
     // Create all the systems
-    val events = Events()
     val serializationSystem = SerializationSystem()
     val shapeRenderer = ShapeRenderer()
     val ticker = Ticker()
@@ -41,18 +41,30 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val renderer = Renderer(batch, ticker)
     val debugRenderer = DebugRenderer(shapeRenderer)
 
-    class GameInputAdapter : InputAdapter() {
+    fun projectCoords(x: Int, y: Int): Vector2 {
+        val vector3d = stage.camera.unproject(vec3(x.toFloat(), y.toFloat(), 0f))
+        return vec2(vector3d.x, vector3d.y)
+    }
+
+    inner class GameInputAdapter : InputAdapter() {
         override fun touchDown(x: Int, y: Int, pointer: Int, button: Int): Boolean {
-            rain.touchDown(x, y)
+            // The y axis is inverted for touching.
+            rain.touchDown(projectCoords(x, y))
             return false
         }
+
         override fun touchUp(x: Int, y: Int, pointer: Int, button: Int): Boolean {
             rain.touchUp()
             return false
         }
+
+        override fun touchDragged(x: Int, y: Int, pointer: Int): Boolean {
+            rain.touchDragged(projectCoords(x, y))
+            return false
+        }
     }
 
-    class GameGestureListener : GestureListener {
+    inner class GameGestureListener : GestureListener {
         override fun touchDown(x: Float, y: Float, pointer: Int, button: Int): Boolean { return false }
         override fun tap(x: Float, y: Float, count: Int, button: Int): Boolean { return false }
         override fun longPress(x: Float, y: Float): Boolean { return false }
@@ -74,40 +86,16 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         setFillParent(true)
     }
 
-    val ui = table {
-        setFillParent(true)
-        table {
-            right()
-            imageButton(style = "watering") {
-                onClick {
-                    events.wateringCan()
-                }
-            }.cell(
-                height = appWidth / 6f,
-                width = appWidth / 6f,
-                pad = 20f
-            )
-        }.cell(
-            expand = true,
-            row = true,
-            fillX = true,
-            align = Align.bottom
-        )
-        pack()
-    }
-
     override fun show() {
         engine.addSystem(ticker)
         engine.addSystem(gravity)
         engine.addSystem(wind)
-        engine.addSystem(events)
         engine.addSystem(clouds)
         engine.addSystem(renderer)
         engine.addSystem(debugRenderer)
         engine.addSystem(serializationSystem)
         engine.addSystem(rain)
         stage.addActor(view)
-        stage.addActor(ui)
         val multiplexer = InputMultiplexer()
         multiplexer.addProcessor(stage)
         multiplexer.addProcessor(GestureDetector(gestureListener))
@@ -133,6 +121,5 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
 
     override fun hide() {
         view.remove()
-        ui.remove()
     }
 }

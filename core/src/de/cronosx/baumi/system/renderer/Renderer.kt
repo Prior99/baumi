@@ -18,6 +18,7 @@ class Renderer(var batch: Batch, val ticker: Ticker) : EntitySystem() {
     override fun addedToEngine(engine: Engine) {
         subSystems = listOf(
             BranchRenderer(batch, engine),
+            RainDropRenderer(batch, engine),
             CloudRenderer(batch, engine),
             GroundWaterRenderer(batch, engine),
             LeafRenderer(batch, engine),

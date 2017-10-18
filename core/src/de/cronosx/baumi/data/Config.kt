@@ -2,6 +2,7 @@ package de.cronosx.baumi.data
 
 data class Config (
     val groundHeight: Float,
+    val cloudHeight: Float,
     val initialWater: Float,
     val maxWater: Float,
     val waterEnergyYield: Float,
@@ -12,11 +13,13 @@ data class Config (
     val maxCloudContent: Float,
     val minCloudContent: Float,
     val clouds: Int,
-    val dropContent: Float
+    val dropContent: Float,
+    val dropsPerSecond: Float
 )
 
 val config = Config(
     groundHeight = 360f,
+    cloudHeight = 500f,
     initialWater = 180000f,
     maxWater = 360000f,
     waterEnergyYield = 5f,
@@ -27,5 +30,6 @@ val config = Config(
     maxCloudContent = 20000f,
     minCloudContent = 2000f,
     clouds = 4,
-    dropContent = 50f
+    dropContent = 50f,
+    dropsPerSecond = 5f
 )

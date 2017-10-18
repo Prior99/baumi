@@ -22,4 +22,8 @@ class Buffer(
             "energyYield" to energyYield
         )
     }
+
+    fun add(amount: Float) {
+        current = minOf(current + amount, max)
+    }
 }
