@@ -11,21 +11,20 @@ class Fruits(engine: Engine) : TickSubSystem(engine) {
     val genetics = mapperFor<Genetic>()
 
     override fun tick(number: Int) {
-        for (entity in engine.entities) {
-            if (!fruits.has(entity)) {
-                continue
-            }
-            val fruit = fruits.get(entity)
-            val consumer = consumers.get(entity)
-            val fruitGene = genetics.get(fruit.parent).dna.fruits
-            if (consumer.energy > 0) {
-                fruit.age++
-            }
-            val duration = fruitGene.growingDuration + fruitGene.bloomingDuration + fruitGene.fruitDuration
-            if (fruit.age > duration) {
-                branches.get(fruit.parent).children.remove(entity)
-                engine.removeEntity(entity)
-            }
-        }
+        engine.entities
+                .filter { fruits.has(it) && consumers.has(it) }
+                .forEach {
+                    val fruit = fruits.get(it)
+                    val consumer = consumers.get(it)
+                    val fruitGene = genetics.get(fruit.parent).dna.fruits
+                    if (consumer.energy > 0) {
+                        fruit.age++
+                    }
+                    val duration = fruitGene.growingDuration + fruitGene.bloomingDuration + fruitGene.fruitDuration
+                    if (fruit.age > duration) {
+                        branches.get(fruit.parent).children.remove(it)
+                        engine.removeEntity(it)
+                    }
+                }
     }
 }

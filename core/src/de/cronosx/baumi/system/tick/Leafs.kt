@@ -11,10 +11,9 @@ class Leafs(engine: Engine) : TickSubSystem(engine) {
     val movables = mapperFor<Movable>()
 
     override fun tick(number: Int) {
-        for (entity in engine.entities) {
-            if (!decomposes.has(entity) || !leafs.has(entity) || !movables.has(entity)) {
-                continue
-            }
+        engine.entities
+                .filter {decomposes.has(it) && leafs.has(it) && movables.has(it) }
+                .forEach { entity ->
             val decompose = decomposes.get(entity)
             val movable = movables.get(entity)
             val leaf = leafs.get(entity)

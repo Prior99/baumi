@@ -9,17 +9,10 @@ class Decomposing(engine: Engine) : TickSubSystem(engine) {
     val healths = mapperFor<Health>()
 
     override fun tick(number: Int) {
-        for (entity in engine.entities) {
-            if (!decomposes.has(entity) || !healths.has(entity)) {
-                continue
-            }
-            if (healths.get(entity).alive) {
-                continue
-            }
-            val decompose = decomposes.get(entity)
-            if (decompose.current < decompose.max) {
-                decompose.current += decompose.speed
-            }
-        }
+        engine.entities
+                .filter { decomposes.has(it) && healths.has(it) && !healths.get(it).alive }
+                .map { decomposes.get(it) }
+                .filter { it.current < it.max }
+                .forEach { it.current += it.speed }
     }
 }
