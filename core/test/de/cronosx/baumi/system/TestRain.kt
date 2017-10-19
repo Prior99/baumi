@@ -1,0 +1,134 @@
+package de.cronosx.baumi.system
+
+import com.badlogic.ashley.core.Entity
+import com.badlogic.ashley.core.PooledEngine
+import com.winterbe.expekt.expect
+import de.cronosx.baumi.component.*
+import de.cronosx.baumi.data.config
+import ktx.ashley.entity
+import ktx.ashley.mapperFor
+import ktx.math.vec2
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.describe
+import org.jetbrains.spek.api.dsl.it
+
+class TestRain : Spek({
+    var engine = PooledEngine()
+
+    val positions = mapperFor<Position>()
+    val rainDrops = mapperFor<RainDrop>()
+    val buffers = mapperFor<Buffer>()
+    val movables = mapperFor<Movable>()
+
+    var rain: Rain? = null
+
+    beforeEachTest {
+        engine = PooledEngine()
+    }
+
+    describe("The Rain system") {
+        var buffer: Entity? = null
+
+        beforeEachTest {
+            rain = Rain()
+            engine.addSystem(rain)
+            buffer = engine.entity {
+                with<Buffer>{
+                    max = 100f
+                    current = 0f
+                }
+                with<GroundWater>{}
+            }
+        }
+
+        it("handles entities with `RainDrop` which are abput to hit the ground") {
+            val entity = engine.entity {
+                with<Position>{ position = vec2(800f, 100f)}
+                with<RainDrop>{}
+            }
+            engine.update(4f)
+            expect(rainDrops.has(entity)).equal(false)
+            expect(positions.has(entity)).equal(false)
+            expect(buffers.get(buffer).current).equal(config.dropContent)
+        }
+
+        it("ignores entities with `RainDrops` which did not hit the ground") {
+            val entity = engine.entity {
+                with<Position>{ position = vec2(800f, 800f)}
+                with<RainDrop>{}
+            }
+            engine.update(4f)
+            expect(rainDrops.has(entity)).equal(true)
+            expect(positions.has(entity)).equal(true)
+            expect(buffers.get(buffer).current).equal(0f)
+        }
+        
+        describe("with a cloud") {
+            var cloud: Entity? = null
+            
+            beforeEachTest { 
+                cloud = engine.entity { 
+                    with<Position>{ position = vec2(800f, 800f) }
+                    with<Cloud>{
+                        content = 100f
+                    }
+                    with<Movable>{
+                        weight = 100f
+                        fixed = false
+                        floating = true
+                    }
+                }
+            }
+            
+            describe("with the user having touched the cloud") {
+                beforeEachTest {
+                    rain!!.touchDown(vec2(820f, 820f))
+                }
+
+                it("stores the touched cloud") {
+                    expect(rain!!.current!!.cloud).equal(cloud)
+                    expect(rain!!.current!!.offsetToCursor).equal(vec2(20f, 20f))
+                    expect(rain!!.lastPosition).equal(vec2(800f, 800f))
+                    expect(rain!!.timeContingent).equal(0f)
+                }
+
+                it("makes the cloud's `Movable` component to have `fixed = true`") {
+                    expect(movables.get(cloud).fixed).equal(true)
+                }
+
+                describe("with the user having dragged the cloud") {
+                    beforeEachTest {
+                        rain!!.touchDragged(vec2(840f, 820f))
+                    }
+
+                    it("moves the cloud") {
+                        expect(positions.get(cloud).position).equal(vec2(820f, 800f))
+                    }
+
+                    it("spawns entities with `RainDrop` when 0.1s has passed") {
+                        engine.update(1f)
+                        // moved = 20
+                        // dropsPerTime = 5 * 1 = 5
+                        // movedModifiers = 1 * 20 * 20 = 400
+                        // dropsToSpawn = 5 * 400 = 2000
+                        expect(engine.entities.filter{ rainDrops.has(it) }.count()).equal(2000)
+                    }
+
+                    it("spawns entities with `RainDrop` when 0.1s has passed with multiple updates") {
+                        for (i in 1..15) {
+                            engine.update(1f)
+                        }
+                        expect(engine.entities.filter{ rainDrops.has(it) }.count()).equal(2000)
+                    }
+                }
+
+                it("unsets the cloud with the user having lifted the finger") {
+                    rain!!.touchUp()
+                    expect(rain!!.current).equal(null)
+                    expect(movables.get(cloud).fixed).equal(false)
+                }
+            }
+        }
+    }
+})
+

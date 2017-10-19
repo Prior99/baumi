@@ -37,7 +37,6 @@ class Rain() : EntitySystem() {
                 touchPosition >= position && touchPosition <= position + size
             }
         if (cloud != null) {
-            debug{ "Rain touched cloud at ${touchPosition.x},${touchPosition.y}. "}
             // Reset time.
             timeContingent = 0f
             val movable = movables.get(cloud)

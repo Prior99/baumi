@@ -26,6 +26,6 @@ class Wind() : IteratingSystem(
         super.update(delta)
         world.windDirection += delta * Math.random().toFloat() * 0.3f
         world.windDirection = minOf(world.windDirection, 10f)
-        world.windDirection = maxOf(world.windDirection, 10f)
+        world.windDirection = maxOf(world.windDirection, -10f)
     }
 }

@@ -31,3 +31,7 @@ build-desktop:
 @PHONY: clean
 clean:
 	./gradlew clean
+
+@PHONY: test
+test:
+	./gradlew core:test
