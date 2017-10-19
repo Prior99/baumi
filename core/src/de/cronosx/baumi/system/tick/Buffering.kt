@@ -16,18 +16,17 @@ class Buffering(engine: Engine) : TickSubSystem(engine) {
                     val buffer = buffers.get(entity)
                     buffer.current = buffer.max
                 }
+            }
+            if (!buffers.has(entity) || !producers.has(entity)) {
+                continue
+            }
+            val buffer = buffers.get(entity)
+            val producer = producers.get(entity)
+            if (buffer.current > 0f) {
+                producer.rate = minOf(buffer.energyYield, buffer.current)
+                buffer.current = maxOf(0f, buffer.current - buffer.energyYield)
             } else {
-                if (!buffers.has(entity) || !producers.has(entity)) {
-                    continue
-                }
-                val buffer = buffers.get(entity)
-                val producer = producers.get(entity)
-                if (buffer.current > 0f) {
-                    producer.rate = minOf(buffer.energyYield, buffer.current)
-                    buffer.current = maxOf(0f, buffer.current - buffer.energyYield)
-                } else {
-                    producer.rate = 0f
-                }
+                producer.rate = 0f
             }
         }
     }

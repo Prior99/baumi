@@ -22,7 +22,7 @@ class Application : KtxGame<Screen>() {
     val context = Context()
 
     override fun create () {
-        Gdx.app.setLogLevel(debug.logLevel)
+        Gdx.app.logLevel = debug.logLevel
         enableKtxCoroutines(asynchronousExecutorConcurrencyLevel = 1)
         context.register {
             bindSingleton<Batch>(SpriteBatch())

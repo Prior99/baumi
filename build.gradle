@@ -133,12 +133,14 @@ project(":core") {
         compile "com.github.salomonbrys.kotson:kotson:$kotsonVersion"
         testCompile "org.jetbrains.spek:spek-api:$spekVersion"
         testCompile "com.winterbe:expekt:$expektVersion"
-        testRuntime "org.jetbrains.spek:spek-junit-platform-engine:$spekVersion"
         testCompile "org.junit.platform:junit-platform-runner:$junitVersion"
         testCompile "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
         testCompile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
         testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
         testCompile "org.junit.platform:junit-platform-launcher:$junitVersion"
+        testCompile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        testRuntime "org.jetbrains.spek:spek-junit-platform-engine:$spekVersion"
     }
 }
 
