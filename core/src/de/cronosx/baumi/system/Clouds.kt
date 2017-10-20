@@ -25,7 +25,7 @@ class Clouds() : EntitySystem() {
             val x = if (world.windDirection < 0) appWidth.toFloat() else -textureWidth.toFloat()
             val y = appHeight.toFloat() - textureHeight.toFloat() - Math.random().toFloat() * textureHeight.toFloat()
             debug { "Only $cloudCount/${config.clouds} clouds alive. Spawning cloud at $x/$y." }
-            engine.add { entity {
+            engine.entity {
                 with<Position> {
                     position = vec2(x, y)
                 }
@@ -39,7 +39,7 @@ class Clouds() : EntitySystem() {
                     fixed = false
                 }
                 with<Uuid> {}
-            } }
+            }
         }
         for (entity in engine.entities) {
             if (!clouds.has(entity)) {

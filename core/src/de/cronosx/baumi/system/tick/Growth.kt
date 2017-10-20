@@ -179,6 +179,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             }
             with<Movable> {
                 weight = 100f
+                fixed = true
             }
         })
     }

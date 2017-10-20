@@ -8,6 +8,10 @@ import ktx.ashley.mapperFor
 
 val uuids = mapperFor<Uuid>()
 
+abstract class SerializableComponent : Component {
+    abstract fun toJson(): JsonObject
+}
+
 fun deserializeComponent(obj: JsonObject, engine: Engine): Component? {
     return when (obj["type"].string) {
         "Age" -> Age(obj)
@@ -29,8 +33,4 @@ fun deserializeComponent(obj: JsonObject, engine: Engine): Component? {
         "RainDrop" -> RainDrop(obj)
         else -> null
     }
-}
-
-abstract class SerializableComponent : Component {
-    abstract fun toJson(): JsonObject
 }

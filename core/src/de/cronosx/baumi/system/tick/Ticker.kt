@@ -1,7 +1,10 @@
 package de.cronosx.baumi.system.tick
 
 import com.badlogic.ashley.core.Engine
+import de.cronosx.baumi.component.Leaf
+import de.cronosx.baumi.component.Movable
 import de.cronosx.baumi.data.*
+import ktx.ashley.mapperFor
 import ktx.log.*
 import java.util.*
 import kotlin.system.measureTimeMillis
@@ -10,6 +13,8 @@ fun Double.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
 
 class Ticker() : ReplayIntervalSystem(1 / config.tickSpeed) {
     var subSystems: List<TickSubSystem> = ArrayList()
+    val movables = mapperFor<Movable>()
+    val leafs = mapperFor<Leaf>()
 
     override fun addedToEngine(engine: Engine) {
         subSystems = listOf(

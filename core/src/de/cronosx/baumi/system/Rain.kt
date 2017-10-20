@@ -122,7 +122,7 @@ class Rain() : EntitySystem() {
         }
         // Spawn raindrops.
         spawn(delta)
-        // Handle existjng drops.
+        // Handle existing drops.
         rain()
     }
 }
