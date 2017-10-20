@@ -46,7 +46,7 @@ class EnergyDistribution(engine: Engine) : TickSubSystem(engine) {
             val upkeep = consumer.rate
             // Add the requested amount according to global efficiency and local effectiveness,
             // but always subtract the full rate too.
-            consumer.energy += gain - upkeep
+            consumer.energy = maxOf(0f, consumer.energy + gain - upkeep)
             // Deduct the leftover energy from all consumers.
             if (consumer.energy > consumer.maxEnergy) {
                 leftoverEnergy += consumer.energy - consumer.maxEnergy
@@ -58,7 +58,7 @@ class EnergyDistribution(engine: Engine) : TickSubSystem(engine) {
                 // If the energy sank below the minimum and the entity has health, impact it.
                 // The rate of health loss is proportional to the amount of energy missing below the minimum energy.
                 val health = healths.get(entity)
-                val defecit = maxOf(0f, consumer.energy) / consumer.minEnergy
+                val defecit = maxOf(0f, consumer.energy) / if (consumer.minEnergy == 0f) 1f else consumer.minEnergy
                 val lossRate = 1f - defecit
                 val loss = lossRate * health.max * consumer.healthDecayRate
                 val before = health.current
