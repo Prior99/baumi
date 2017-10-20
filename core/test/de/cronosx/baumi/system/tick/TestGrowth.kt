@@ -1,5 +1,6 @@
 package de.cronosx.baumi.system.tick
 
+import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.PooledEngine
 import com.winterbe.expekt.expect
 import de.cronosx.baumi.component.*
@@ -14,7 +15,11 @@ import org.jetbrains.spek.api.dsl.it
 class TestGrowth : Spek({
     var engine = PooledEngine()
 
-    val decomposes = mapperFor<Decompose>()
+    val branches = mapperFor<Branch>()
+    val consumers = mapperFor<Consumer>()
+    val leafs = mapperFor<Leaf>()
+    val genetics = mapperFor<Genetic>()
+    val positions = mapperFor<Position>()
     val healths = mapperFor<Health>()
 
     beforeEachTest {
@@ -23,71 +28,106 @@ class TestGrowth : Spek({
 
     describe("The Growth system") {
         var growth: Growth? = null
+        var root: Entity? = null
 
         beforeEachTest {
             growth = Growth(engine)
-            engine.entity {
+            root = engine.entity {
                 with<Position> {
                     position = vec2(540f, 360f)
                 }
                 with<Branch> {
-                    rotation = defaultDna.rotation.initial
-                    length = defaultDna.length.initial
-                    maxLength = defaultDna.length.max
-                    children = ArrayList()
+                    rotation = 0f
+                    length = 0f
+                    maxLength = 100f
                 }
-                with<Genetic> {
-                    dna = defaultDna
-                }
+                with<Genetic> {}
                 with<Health> {
-                    max = defaultDna.health.max
-                    current = defaultDna.health.max
+                    max = 100f
+                    current = 100f
                 }
                 with<Consumer> {
-                    maxEnergy = defaultDna.energy.max
-                    minEnergy = maxEnergy / 2f
-                    energy = minEnergy
-                    rate = defaultDna.energy.upkeep
+                    maxEnergy = 100f
+                    minEnergy = 50f
+                    energy = 100f
+                    rate = 1f
                 }
                 with<Root> {}
             }
         }
 
-        it("increases the decomposition value of all dead entities towards their max") {
-            val entity = engine.entity{
-                with<Health>{
-                    current = 0f
-                    max = 1f
+        describe("creating leafs") {
+            it("creates leafs if enough surplus is available") {
+                branches.get(root).length = 100f
+                val ticks = (defaultDna.leafs.maxGenerationLeafCountPerLength * 100f).toInt()
+                // Grows leafs until max.
+                for (i in 1 .. ticks) {
+                    consumers.get(root).energy = 50f + defaultDna.leafs.leafCost
+                    growth!!.tick(i)
+                    expect(consumers.get(root).energy).equal(50f)
+                    expect(engine.entities.filter{ leafs.has(it) }.count()).equal(i)
                 }
-                with<Decompose> {
-                    current = 0f
-                    speed = 1f
-                    max = 2f
+                // Doesn't grow more leafs than maximum allowed.
+                consumers.get(root).energy = 50f + defaultDna.leafs.leafCost
+                growth!!.tick(ticks + 1)
+                expect(consumers.get(root).energy).equal(50f + defaultDna.leafs.leafCost)
+                expect(engine.entities.filter{ leafs.has(it) }.count()).equal(ticks)
+            }
+
+            it("creates no leafs if no surplus is available") {
+                branches.get(root).length = 100f
+                val ticks = (defaultDna.leafs.maxGenerationLeafCountPerLength * 100f).toInt()
+                for (i in 1 .. ticks) {
+                    consumers.get(root).energy = 50f
+                    growth!!.tick(i)
+                    expect(consumers.get(root).energy).equal(50f)
+                    expect(engine.entities.filter{ leafs.has(it) }.count()).equal(0)
                 }
             }
-            growth!!.tick(1)
-            expect(decomposes.get(entity).current).equal(1f)
-            growth!!.tick(2)
-            expect(decomposes.get(entity).current).equal(2f)
-            growth!!.tick(3)
-            expect(decomposes.get(entity).current).equal(2f)
         }
 
-        it("ignores living entities") {
-            val entity = engine.entity{
-                with<Health>{
-                    current = 1f
-                    max = 1f
-                }
-                with<Decompose> {
-                    current = 0f
-                    speed = 1f
-                    max = 2f
-                }
+        describe("creating branches") {
+            it("creates branches if enough surplus is available to support branches and leafs") {
+                branches.get(root).length = 100f
+                consumers.get(root).energy = 50f + defaultDna.branching.branchCost + defaultDna.leafs.leafCost
+                growth!!.tick(1)
+                expect(engine.entities.filter{ leafs.has(it) }.count()).equal(1)
+                expect(engine.entities.filter{ branches.has(it) }.count()).above(1)
             }
-            growth!!.tick(1)
-            expect(decomposes.get(entity).current).equal(0f)
+
+            it("creates branches if enough surplus is available and there are too many leafs already") {
+                val branch = branches.get(root)
+                for (i in 1 .. 100) {
+                    branch.children.add(engine.entity{
+                        with<Leaf> {
+                            parent = root
+                        }
+                        with<Position> {}
+                    })
+                }
+                branches.get(root).length = 100f
+                consumers.get(root).energy = 50f + defaultDna.branching.branchCost
+                growth!!.tick(1)
+                expect(engine.entities.filter{ leafs.has(it) }.count()).equal(100)
+                expect(engine.entities.filter{ branches.has(it) }.count()).above(1)
+            }
+        }
+        describe("growing of length") {
+            it("increases the length if enough surplus is available and there are already enough leafs") {
+                val branch = branches.get(root)
+                for (i in 1 .. 100) {
+                    branch.children.add(engine.entity{
+                        with<Leaf> {
+                            parent = root
+                        }
+                        with<Position> {}
+                    })
+                }
+                branches.get(root).length = 0f
+                consumers.get(root).energy = 50f + defaultDna.length.growCost
+                growth!!.tick(1)
+                expect(branches.get(root).length).equal(defaultDna.length.growthSpeed)
+            }
         }
     }
 })
-
