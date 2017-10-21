@@ -18,8 +18,8 @@ class FruitRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) 
     val texture = Texture("blossom.png")
     val textureHeight = 50
     val textureWidth = 50
-    val bloomIndex = 13
-    val fruitIndex = 26
+    val bloomIndex = 9
+    val fruitIndex = 29
 
     fun processEntity(entity: Entity, delta: Float) {
         val position = positions.get(entity).position
