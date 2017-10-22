@@ -20,7 +20,6 @@ import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.InputMultiplexer
 
 class Game (val stage: Stage, val batch: Batch) : KtxScreen {
-    val bus = RxBus()
     val engine = PooledEngine()
     // Input.
     val gestureListener = GameGestureListener()
@@ -30,6 +29,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val shapeRenderer = ShapeRenderer()
     val ticker = Ticker()
     val rain = Rain()
+    val dragging = Dragging()
     val gravity = Gravity()
     val wind = Wind()
     val clouds = Clouds()
@@ -44,17 +44,17 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     inner class GameInputAdapter : InputAdapter() {
         override fun touchDown(x: Int, y: Int, pointer: Int, button: Int): Boolean {
             // The y axis is inverted for touching.
-            rain.touchDown(projectCoords(x, y))
+            dragging.touchDown(projectCoords(x, y))
             return false
         }
 
         override fun touchUp(x: Int, y: Int, pointer: Int, button: Int): Boolean {
-            rain.touchUp()
+            dragging.touchUp()
             return false
         }
 
         override fun touchDragged(x: Int, y: Int, pointer: Int): Boolean {
-            rain.touchDragged(projectCoords(x, y))
+            dragging.touchDragged(projectCoords(x, y))
             return false
         }
     }
@@ -90,6 +90,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         engine.addSystem(debugRenderer)
         engine.addSystem(serializationSystem)
         engine.addSystem(rain)
+        engine.addSystem(dragging)
         stage.addActor(view)
         val multiplexer = InputMultiplexer()
         multiplexer.addProcessor(stage)

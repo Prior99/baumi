@@ -5,15 +5,19 @@ import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector2
 import de.cronosx.baumi.data.*
+import de.cronosx.baumi.events.Drag
+import de.cronosx.baumi.events.DragStart
+import de.cronosx.baumi.events.DragStop
 import ktx.ashley.*
 import ktx.math.*
-
-data class CurrentTarget(
-        val entity: Entity,
-        val offsetToCursor: Vector2
-)
+import org.greenrobot.eventbus.EventBus
 
 class Dragging() : EntitySystem() {
+    data class CurrentTarget(
+            val entity: Entity,
+            val offsetToCursor: Vector2
+    )
+
     val positions = mapperFor<Position>()
     val draggables = mapperFor<Draggable>()
 
@@ -37,11 +41,13 @@ class Dragging() : EntitySystem() {
                     targetEntity,
                     offsetToCursor = touchPosition - entityPosition
             )
+            EventBus.getDefault().post(DragStart(targetEntity))
         }
     }
 
     fun touchUp() {
         if (current != null) {
+            EventBus.getDefault().post(DragStop(current!!.entity))
             current = null
         }
     }
@@ -52,7 +58,10 @@ class Dragging() : EntitySystem() {
         }
         val position = positions.get(current!!.entity)
         val actualPosition = touchPosition - current!!.offsetToCursor
-        position.position = vec2(actualPosition.x, maxOf(actualPosition.y, config.cloudHeight))
+        val oldPosition = position.position
+        val newPosition = vec2(actualPosition.x, maxOf(actualPosition.y, config.cloudHeight))
+        position.position = newPosition
+        EventBus.getDefault().post(Drag(current!!.entity, newPosition - oldPosition))
     }
     override fun update(delta: Float) {
         // Cloud could have been deleted.

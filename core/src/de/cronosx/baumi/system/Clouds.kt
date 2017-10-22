@@ -38,6 +38,9 @@ class Clouds() : EntitySystem() {
                     floating = true
                     fixed = false
                 }
+                with<Draggable>{
+                    size = vec2(500f, 250f)
+                }
                 with<Uuid> {}
             }
         }

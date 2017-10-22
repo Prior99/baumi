@@ -6,15 +6,12 @@ import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector2
 import de.cronosx.baumi.Math.FloatMath
 import de.cronosx.baumi.data.*
+import de.cronosx.baumi.events.Drag
+import de.cronosx.baumi.events.DragStart
+import de.cronosx.baumi.events.DragStop
 import ktx.ashley.*
 import ktx.math.*
-import ktx.log.*
-import ktx.math.*
-
-data class CurrentCloud(
-        val cloud: Entity,
-        val offsetToCursor: Vector2
-)
+import org.greenrobot.eventbus.Subscribe
 
 class Rain() : EntitySystem() {
     val clouds = mapperFor<Cloud>()
@@ -26,66 +23,55 @@ class Rain() : EntitySystem() {
 
     var timeContingent = 0f
     val size = vec2(500f, 250f)
-    var current: CurrentCloud? = null
-    var lastPosition: Vector2? = null
+    var current: Entity? = null
+    var movementDelta: Vector2? = null
 
-    fun touchDown(touchPosition: Vector2) {
-        val cloud = engine.entities
-            .filter{ clouds.has(it) && positions.has(it) }
-            .find{
-                val position = positions.get(it).position.cpy()
-                touchPosition >= position && touchPosition <= position + size
-            }
-        if (cloud != null) {
-            // Reset time.
-            timeContingent = 0f
-            val movable = movables.get(cloud)
-            val cloudPosition = positions.get(cloud).position
-            // Make cloud not be influenced by wind anymore.
-            movable.fixed = true
-            // Store cloud and the offset to the cursor.
-            current = CurrentCloud(
-                    cloud,
-                    offsetToCursor = touchPosition - cloudPosition
-            )
-            // Store the position of the cloud.
-            lastPosition = cloudPosition.cpy()
-        }
-    }
-
-    fun touchUp() {
-        if (current != null) {
-            val movable = movables.get(current!!.cloud)
-            movable.fixed = false
-            current = null
-        }
-    }
-
-    fun touchDragged(touchPosition: Vector2) {
-        if (current == null) {
+    @Subscribe
+    fun onDragStart(event: DragStart) {
+        val entity = event.entity;
+        if (!clouds.has(entity) || !movables.has(entity)) {
             return
         }
-        val position = positions.get(current!!.cloud)
-        val actualPosition = touchPosition - current!!.offsetToCursor
-        position.position = vec2(actualPosition.x, maxOf(actualPosition.y, config.cloudHeight))
+        val movable = movables.get(entity)
+        movable.fixed = true
+        current = entity
+    }
+
+    @Subscribe
+    fun onDragStop(event: DragStop) {
+        val entity = event.entity;
+        if (!clouds.has(entity) || !movables.has(entity)) {
+            return
+        }
+        val movable = movables.get(entity)
+        movable.fixed = true
+        current = null
+    }
+
+    @Subscribe
+    fun onDrag(event: Drag) {
+        val entity = event.entity;
+        if (entity != current) {
+            return
+        }
+        movementDelta = event.delta
     }
 
     fun spawn(delta: Float) {
-        if (current == null) {
+        if (current == null || movementDelta == null) {
             return
         }
         // Increase amount of unspent time by time passed.
         timeContingent += delta
         // Current position of the cloud.
-        val cloudPosition = positions.get(current!!.cloud).position.cpy()
+        val cloudPosition = positions.get(current!!).position.cpy()
         // Calculate the amount of pixels the cloud moved since the last call.
-        val moved = (lastPosition!! - cloudPosition).len()
         // The amount of drops possible to spawn by time.
         val dropsPerTime = FloatMath.floor(timeContingent * config.dropsPerSecond)
         // Decrease the time contingent by the spent time.
         timeContingent -= dropsPerTime / config.dropsPerSecond
         // Increase the amount of drops to spawn according to the amount of pixels moved.
-        val movedModifier = delta * moved * 20f
+        val movedModifier = delta * movementDelta!!.len() * 20f
         val dropsToSpawn = dropsPerTime * movedModifier
         // Spawn drops.
         for(i in 0 until dropsToSpawn.toInt()) {
@@ -100,9 +86,8 @@ class Rain() : EntitySystem() {
                 }
             }
         }
-        val cloud = clouds.get(current!!.cloud)
+        val cloud = clouds.get(current!!)
         cloud.content -= dropsToSpawn * config.dropContent
-        lastPosition = cloudPosition.cpy()
     }
 
     fun rain() {
@@ -117,7 +102,7 @@ class Rain() : EntitySystem() {
 
     override fun update(delta: Float) {
         // Cloud could have been deleted.
-        if (current != null && (!clouds.has(current!!.cloud) || !positions.has(current!!.cloud))) {
+        if (current != null && (!clouds.has(current!!) || !positions.has(current!!))) {
             current = null
         }
         // Spawn raindrops.
