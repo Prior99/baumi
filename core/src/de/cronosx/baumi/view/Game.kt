@@ -20,6 +20,7 @@ import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.InputMultiplexer
 
 class Game (val stage: Stage, val batch: Batch) : KtxScreen {
+    val bus = RxBus()
     val engine = PooledEngine()
     // Input.
     val gestureListener = GameGestureListener()

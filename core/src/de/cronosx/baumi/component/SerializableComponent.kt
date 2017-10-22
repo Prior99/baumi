@@ -31,6 +31,7 @@ fun deserializeComponent(obj: JsonObject, engine: Engine): Component? {
         "Root" -> Root(obj)
         "Uuid" -> Uuid(obj)
         "RainDrop" -> RainDrop(obj)
+        "Draggable" -> Draggable(obj)
         else -> null
     }
 }
