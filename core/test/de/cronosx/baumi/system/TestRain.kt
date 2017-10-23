@@ -3,8 +3,10 @@ package de.cronosx.baumi.system
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.PooledEngine
 import com.winterbe.expekt.expect
+import de.cronosx.baumi.Bus
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.data.config
+import ktx.ashley.add
 import ktx.ashley.entity
 import ktx.ashley.mapperFor
 import ktx.math.vec2
@@ -21,9 +23,11 @@ class TestRain : Spek({
     val movables = mapperFor<Movable>()
 
     var rain: Rain? = null
+    var dragging: Dragging? = null
 
     beforeEachTest {
         engine = PooledEngine()
+        Bus.reset()
     }
 
     describe("The Rain system") {
@@ -31,7 +35,9 @@ class TestRain : Spek({
 
         beforeEachTest {
             rain = Rain()
+            dragging = Dragging()
             engine.addSystem(rain)
+            engine.addSystem(dragging)
             buffer = engine.entity {
                 with<Buffer>{
                     max = 100f
@@ -41,7 +47,7 @@ class TestRain : Spek({
             }
         }
 
-        it("handles entities with `RainDrop` which are abput to hit the ground") {
+        it("handles entities with `RainDrop` which are about to hit the ground") {
             val entity = engine.entity {
                 with<Position>{ position = vec2(800f, 100f)}
                 with<RainDrop>{}
@@ -77,18 +83,20 @@ class TestRain : Spek({
                         fixed = false
                         floating = true
                     }
+                    with<Draggable>{
+                        size = vec2(500f, 250f)
+                    }
                 }
             }
             
             describe("with the user having touched the cloud") {
                 beforeEachTest {
-                    rain!!.touchDown(vec2(820f, 820f))
+                    dragging!!.touchDown(vec2(820f, 820f))
                 }
 
                 it("stores the touched cloud") {
-                    expect(rain!!.current!!.cloud).equal(cloud)
-                    expect(rain!!.current!!.offsetToCursor).equal(vec2(20f, 20f))
-                    expect(rain!!.lastPosition).equal(vec2(800f, 800f))
+                    expect(rain!!.current).equal(cloud)
+                    expect(dragging!!.current!!.offsetToCursor).equal(vec2(20f, 20f))
                     expect(rain!!.timeContingent).equal(0f)
                 }
 
@@ -98,7 +106,7 @@ class TestRain : Spek({
 
                 describe("with the user having dragged the cloud") {
                     beforeEachTest {
-                        rain!!.touchDragged(vec2(840f, 820f))
+                        dragging!!.touchDragged(vec2(840f, 820f))
                     }
 
                     it("moves the cloud") {
@@ -123,8 +131,9 @@ class TestRain : Spek({
                 }
 
                 it("unsets the cloud with the user having lifted the finger") {
-                    rain!!.touchUp()
+                    dragging!!.touchUp()
                     expect(rain!!.current).equal(null)
+                    expect(dragging!!.current).equal(null)
                     expect(movables.get(cloud).fixed).equal(false)
                 }
             }

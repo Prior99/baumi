@@ -131,7 +131,6 @@ project(":core") {
         compile "io.github.libktx:ktx-style:$ktxVersion"
         compile "io.github.libktx:ktx-ashley:$ktxVersion"
         compile "com.github.salomonbrys.kotson:kotson:$kotsonVersion"
-        compile "org.greenrobot:eventbus:3.0.0"
         testCompile "org.jetbrains.spek:spek-api:$spekVersion"
         testCompile "com.winterbe:expekt:$expektVersion"
         testCompile "org.junit.platform:junit-platform-runner:$junitVersion"

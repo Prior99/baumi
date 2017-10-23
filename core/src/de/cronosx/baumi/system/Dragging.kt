@@ -4,13 +4,12 @@ import de.cronosx.baumi.component.*
 import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector2
-import de.cronosx.baumi.data.*
+import de.cronosx.baumi.Bus
 import de.cronosx.baumi.events.Drag
 import de.cronosx.baumi.events.DragStart
 import de.cronosx.baumi.events.DragStop
 import ktx.ashley.*
 import ktx.math.*
-import org.greenrobot.eventbus.EventBus
 
 class Dragging() : EntitySystem() {
     data class CurrentTarget(
@@ -31,7 +30,10 @@ class Dragging() : EntitySystem() {
                     val draggable = draggables.get(it)
                     val size = draggable.size.cpy()
                     val offset = draggable.offset.cpy()
-                    touchPosition + offset >= position && touchPosition + offset <= position + size
+                    touchPosition.x >= (position + offset).x &&
+                            touchPosition.y >= (position + offset).y &&
+                            touchPosition.x <= (position + offset + size).x &&
+                            touchPosition.y <= (position + offset + size).y
                 }
         if (targetEntity != null) {
             // Reset time.
@@ -41,13 +43,13 @@ class Dragging() : EntitySystem() {
                     targetEntity,
                     offsetToCursor = touchPosition - entityPosition
             )
-            EventBus.getDefault().post(DragStart(targetEntity))
+            Bus.emit(DragStart(targetEntity))
         }
     }
 
     fun touchUp() {
         if (current != null) {
-            EventBus.getDefault().post(DragStop(current!!.entity))
+            Bus.emit(DragStop(current!!.entity))
             current = null
         }
     }
@@ -58,10 +60,9 @@ class Dragging() : EntitySystem() {
         }
         val position = positions.get(current!!.entity)
         val actualPosition = touchPosition - current!!.offsetToCursor
-        val oldPosition = position.position
-        val newPosition = vec2(actualPosition.x, maxOf(actualPosition.y, config.cloudHeight))
-        position.position = newPosition
-        EventBus.getDefault().post(Drag(current!!.entity, newPosition - oldPosition))
+        val oldPosition = position.position.cpy()
+        position.position = actualPosition.cpy()
+        Bus.emit(Drag(current!!.entity, actualPosition - oldPosition))
     }
     override fun update(delta: Float) {
         // Cloud could have been deleted.

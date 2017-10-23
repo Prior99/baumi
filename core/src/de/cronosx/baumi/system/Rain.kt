@@ -4,6 +4,7 @@ import de.cronosx.baumi.component.*
 import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector2
+import de.cronosx.baumi.Bus.on
 import de.cronosx.baumi.Math.FloatMath
 import de.cronosx.baumi.data.*
 import de.cronosx.baumi.events.Drag
@@ -11,7 +12,6 @@ import de.cronosx.baumi.events.DragStart
 import de.cronosx.baumi.events.DragStop
 import ktx.ashley.*
 import ktx.math.*
-import org.greenrobot.eventbus.Subscribe
 
 class Rain() : EntitySystem() {
     val clouds = mapperFor<Cloud>()
@@ -24,37 +24,38 @@ class Rain() : EntitySystem() {
     var timeContingent = 0f
     val size = vec2(500f, 250f)
     var current: Entity? = null
-    var movementDelta: Vector2? = null
+    var movementDelta: Vector2 = vec2(0f, 0f)
 
-    @Subscribe
-    fun onDragStart(event: DragStart) {
-        val entity = event.entity;
-        if (!clouds.has(entity) || !movables.has(entity)) {
-            return
+    init {
+        on { event: DragStart ->
+            val entity = event.entity;
+            if (!clouds.has(entity) || !movables.has(entity)) {
+                return@on
+            }
+            val movable = movables.get(entity)
+            movable.fixed = true
+            current = entity
         }
-        val movable = movables.get(entity)
-        movable.fixed = true
-        current = entity
-    }
 
-    @Subscribe
-    fun onDragStop(event: DragStop) {
-        val entity = event.entity;
-        if (!clouds.has(entity) || !movables.has(entity)) {
-            return
+        on { event: DragStop ->
+            val entity = event.entity;
+            if (!clouds.has(entity) || !movables.has(entity)) {
+                return@on
+            }
+            val movable = movables.get(entity)
+            movable.fixed = false
+            current = null
         }
-        val movable = movables.get(entity)
-        movable.fixed = true
-        current = null
-    }
 
-    @Subscribe
-    fun onDrag(event: Drag) {
-        val entity = event.entity;
-        if (entity != current) {
-            return
+        on { event: Drag ->
+            val entity = event.entity;
+            if (entity != current) {
+                return@on
+            }
+            val position = positions.get(event.entity).position
+            position.y = maxOf(position.y, config.cloudHeight)
+            movementDelta += event.delta
         }
-        movementDelta = event.delta
     }
 
     fun spawn(delta: Float) {
@@ -88,6 +89,7 @@ class Rain() : EntitySystem() {
         }
         val cloud = clouds.get(current!!)
         cloud.content -= dropsToSpawn * config.dropContent
+        movementDelta = vec2(0f, 0f)
     }
 
     fun rain() {
