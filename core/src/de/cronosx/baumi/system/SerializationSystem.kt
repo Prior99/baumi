@@ -8,6 +8,7 @@ import com.badlogic.ashley.core.Engine
 import com.badlogic.gdx.Gdx
 import de.cronosx.baumi.data.*
 import de.cronosx.baumi.appWidth
+import de.cronosx.baumi.events.Drag
 import ktx.ashley.*
 import ktx.math.*
 import ktx.log.*
@@ -57,6 +58,19 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
             }
             with<GroundWater> {}
             with<Uuid> {}
+        }
+        // Cart.
+        engine.entity {
+            with<Position> {
+                position = vec2(20f, 360f)
+            }
+            with<Draggable> {
+                size = vec2(300f, 120f)
+            }
+            with<Cart> {
+                content = 0
+                angle = 0f
+            }
         }
     }
 
