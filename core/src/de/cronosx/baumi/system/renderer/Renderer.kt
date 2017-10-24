@@ -23,6 +23,7 @@ class Renderer(var batch: Batch, val ticker: Ticker) : EntitySystem() {
             LeafRenderer(batch, engine),
             FruitRenderer(batch, engine),
             CloudRenderer(batch, engine),
+            CartRenderer(batch, engine),
             LoadingRenderer(batch, engine, ticker)
         )
     }

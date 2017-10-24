@@ -14,7 +14,8 @@ data class Config (
     val minCloudContent: Float,
     val clouds: Int,
     val dropContent: Float,
-    val dropsPerSecond: Float
+    val dropsPerSecond: Float,
+    val maxCartContent: Int
 )
 
 val config = Config(
@@ -31,5 +32,6 @@ val config = Config(
     minCloudContent = 2000f,
     clouds = 4,
     dropContent = 50f,
-    dropsPerSecond = 5f
+    dropsPerSecond = 5f,
+    maxCartContent = 35
 )
