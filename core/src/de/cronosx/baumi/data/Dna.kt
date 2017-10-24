@@ -33,7 +33,8 @@ data class GeneLeafs (
     // The maximum amount of energy a leaf can store.
     val maxEnergy: Float,
     // The maximum amount of health one lead can have.
-    val maxHealth: Float
+    val maxHealth: Float,
+    val maxYoungLeafs: Int
 )
 
 /**
@@ -143,9 +144,10 @@ val defaultDna = DNA(
         leafCountFalloff = 0.2f,
         maxRotationOffset = 0.2f,
         upkeep = 0.05f,
-        leafCost = 1f,
+        leafCost = 20f,
         maxEnergy = 0.1f,
-        maxHealth = 0.3f
+        maxHealth = 0.3f,
+        maxYoungLeafs = 3
     ),
     length = GeneLength(
         growthSpeed = 0.1f,
@@ -159,7 +161,7 @@ val defaultDna = DNA(
         falloff = 0.6f
     ),
     energy = GeneEnergy(
-        max = 10f,
+        max = 100f,
         falloff = 0.6f,
         upkeep = 0.5f,
         minKeep = 6f
@@ -168,7 +170,7 @@ val defaultDna = DNA(
         maxDepth = 4,
         minLength = 0.3f,
         tripleProbability = 0.6f,
-        branchCost = 2f,
+        branchCost = 20f,
         rotationSpacing = 0.2f,
         rotationVariety = 0.2f
     ),
@@ -178,7 +180,7 @@ val defaultDna = DNA(
         minGeneration = 1,
         upkeep = 0.01f,
         maxEnergy = 1f,
-        fruitCost = 2f,
+        fruitCost = 25f,
         growingDuration = 300,
         bloomingDuration = 1000,
         fruitDuration = 200

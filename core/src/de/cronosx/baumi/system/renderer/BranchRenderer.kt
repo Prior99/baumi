@@ -25,7 +25,7 @@ class BranchRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine)
     val trunkTexture = Texture("trunk.png")
 
     val frames = 12
-    val virtualFrames = 72
+    val virtualFrames = 200
     var time = 0f
 
     fun processEntity(entity: Entity, delta: Float) {
@@ -54,7 +54,6 @@ class BranchRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine)
                 continue
             }
             val energy = Sprite(TextureRegion(energyTexture, 0, (frame.toInt() % frames) * 100, energyTexture.width, 100))
-            info { "frame ${frame.toInt() % frames}"}
             energy.setAlpha(strength)
             energy.setPosition(position.x, position.y)
             energy.setScale(branch.length / energyTexture.width.toFloat())
@@ -63,7 +62,7 @@ class BranchRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine)
             energy.translateY(-tex.height / 2f)
             energy.draw(batch)
         }
-        time += delta * 2
+        time += delta / 2f
     }
 
     override fun render(delta: Float) {

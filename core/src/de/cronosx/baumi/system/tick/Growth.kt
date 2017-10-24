@@ -46,6 +46,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
     val fruits = mapperFor<Fruit>()
     val positions = mapperFor<Position>()
     val roots = mapperFor<Root>()
+    val ages = mapperFor<Age>()
 
     /**
      * Create a new branch forked from the `parent` entity with the given rotations.
@@ -238,7 +239,8 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             // 1. Growing leafs
             val canGrowLeaf =
                 branch.children.filter { leafs.has(it) }.count() < maxLeafCount(entity) &&
-                surplus >= dna.leafs.leafCost
+                surplus >= dna.leafs.leafCost &&
+                branch.children.filter { leafs.has(it) && ages.get(it).age <= 70 }.count() < dna.leafs.maxYoungLeafs
             if (canGrowLeaf) {
                 growLeaf(entity)
                 consumer.energy -= dna.leafs.leafCost
