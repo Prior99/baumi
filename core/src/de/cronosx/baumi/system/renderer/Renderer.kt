@@ -20,12 +20,13 @@ class Renderer(var batch: Batch, val ticker: Ticker) : EntitySystem() {
             BranchRenderer(batch, engine),
             RainDropRenderer(batch, engine),
             GroundWaterRenderer(batch, engine),
-            LeafRenderer(batch, engine),
+            //LeafRenderer(batch, engine),
             FruitRenderer(batch, engine),
             CloudRenderer(batch, engine),
             CartRenderer(batch, engine),
             LoadingRenderer(batch, engine, ticker)
         )
+         batch.enableBlending()
     }
 
     override fun update(delta: Float) {
