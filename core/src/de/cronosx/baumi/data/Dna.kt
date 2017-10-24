@@ -139,7 +139,7 @@ val defaultDna = DNA(
         initial = Math.PI.toFloat() / 2f
     ),
     leafs = GeneLeafs(
-        maxGenerationLeafCountPerLength = 0.2f,
+        maxGenerationLeafCountPerLength = 0.5f,
         leafCountFalloff = 0.2f,
         maxRotationOffset = 0.2f,
         upkeep = 0.05f,
@@ -175,7 +175,7 @@ val defaultDna = DNA(
     fruits = GeneFruits(
         maxValue = 100,
         maxGenerationFruitCountPerLength = 0.02f,
-        minGeneration = 2,
+        minGeneration = 1,
         upkeep = 0.01f,
         maxEnergy = 1f,
         fruitCost = 2f,

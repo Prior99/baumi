@@ -121,6 +121,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         val branch = branches.get(entity)
         val fruitsGene = genetics.get(entity).dna.fruits
         val parentPosition = positions.get(entity).position
+        val parentGenetic = genetics.get(entity)
 
         val randomPositionAlongBranch = Math.random().toFloat()
         val dir = getDirectionVectorAlongBranch(branch.length, branch.rotation)
@@ -138,7 +139,13 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 maxEnergy = fruitsGene.maxEnergy
                 rate = fruitsGene.upkeep
             }
-            with<Age> {}
+            with<Movable> {
+                weight = 300f
+                fixed = true
+            }
+            with<Genetic> {
+                dna = parentGenetic.dna
+            }
         })
     }
 
@@ -200,7 +207,6 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
     fun maxFruitCount(entity: Entity): Int {
         val branch = branches.get(entity)
         val dna = genetics.get(entity).dna
-        val relativeDepth = getMaxGeneration(entity) - branch.generation
         return Math.floor(dna.fruits.maxGenerationFruitCountPerLength * branch.length.toDouble()).toInt()
     }
 
@@ -262,7 +268,8 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             val canGrowFruit =
                 branch.children.filter { fruits.has(it) }.count() < maxFruitCount(entity) &&
                 surplus >= dna.fruits.fruitCost &&
-                branch.generation >= dna.fruits.minGeneration
+                branch.generation >= dna.fruits.minGeneration &&
+                branch.children.filter { branches.has(it) }.count() == 0
             if (canGrowFruit) {
                 growFruit(entity)
                 consumer.energy -= dna.fruits.fruitCost
@@ -316,10 +323,8 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
 
     override fun tick(number: Int) {
         life()
-        for (entity in engine.entities) {
-            if (roots.has(entity)) {
-                adjust(entity)
-            }
-        }
+        engine.entities
+                .filter { roots.has(it) }
+                .forEach { adjust(it) }
     }
 }

@@ -23,7 +23,6 @@ class CartRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
     val textureFruits = Texture("cart/fruits.png")
     val cartWidth = 325
     val cartHeight = 125
-    val wheelWidth = 86
     val fruitsWidth = 234
     val fruitsHeight = 114
     val wheelLength = FloatMath.PI * 2f * 43
@@ -39,11 +38,13 @@ class CartRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
         background.rotation = cart.angle * radiansToDegrees
         background.draw(batch)
         // Draw the content.
-        val fruits = Sprite(TextureRegion(textureFruits, fruitsWidth * cart.content, 0, fruitsWidth, fruitsHeight))
-        fruits.setPosition(position.x + 85, position.y + 55)
-        fruits.setOrigin(170f, -6f)
-        fruits.rotation = cart.angle * radiansToDegrees
-        fruits.draw(batch)
+        if (cart.content > 0) {
+            val fruits = Sprite(TextureRegion(textureFruits, fruitsWidth * (cart.content - 1), 0, fruitsWidth, fruitsHeight))
+            fruits.setPosition(position.x + 85, position.y + 55)
+            fruits.setOrigin(170f, -6f)
+            fruits.rotation = cart.angle * radiansToDegrees
+            fruits.draw(batch)
+        }
         // Draw the carts foreground.
         val foreground = Sprite(TextureRegion(textureCart, cartWidth, 0, cartWidth, cartHeight))
         foreground.setPosition(position.x, position.y)

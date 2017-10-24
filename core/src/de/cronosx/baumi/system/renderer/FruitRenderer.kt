@@ -24,19 +24,21 @@ class FruitRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) 
     fun processEntity(entity: Entity, delta: Float) {
         val position = positions.get(entity).position
         val fruit = fruits.get(entity)
-        val geneFruit = genetics.get(fruit.parent).dna.fruits
+        val geneFruit = genetics.get(entity).dna.fruits
 
         val growingStartAge = 0
         val bloomingStartAge = growingStartAge + geneFruit.growingDuration
-        val fruitStartAge = bloomingStartAge + geneFruit.growingDuration
+        val fruitStartAge = bloomingStartAge + geneFruit.bloomingDuration
+        val fruitEndAge = bloomingStartAge + geneFruit.fruitDuration
         val age = fruit.age
 
         // Calculate x and y offset in texture.
         val x = textureWidth * (
             if (age < bloomingStartAge) bloomIndex * age.toFloat() / geneFruit.growingDuration.toFloat()
             else if (age < fruitStartAge) bloomIndex.toFloat()
-            else bloomIndex.toFloat() +
+            else if (age < fruitEndAge) bloomIndex.toFloat() +
                 (fruitIndex - bloomIndex) * (age.toFloat() - fruitStartAge).toFloat() / geneFruit.fruitDuration
+            else fruitIndex.toFloat()
         ).toInt()
         // Create sprite and render it.
         val cropped = TextureRegion(texture, x, 0, textureWidth, textureHeight)

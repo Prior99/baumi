@@ -11,7 +11,6 @@ import de.cronosx.baumi.events.DragStart
 import de.cronosx.baumi.events.DragStop
 import ktx.ashley.allOf
 import ktx.ashley.mapperFor
-import ktx.log.info
 
 class CartSystem() : IteratingSystem(allOf(Position::class, Cart::class).get()) {
     val positions = mapperFor<Position>()
@@ -53,4 +52,3 @@ class CartSystem() : IteratingSystem(allOf(Position::class, Cart::class).get()) 
         }
     }
 }
-
