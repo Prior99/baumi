@@ -33,6 +33,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val gravity = Gravity()
     val wind = Wind()
     val clouds = Clouds()
+    val cartSystem = CartSystem()
     val renderer = Renderer(batch, ticker)
     val debugRenderer = DebugRenderer(shapeRenderer)
 
@@ -91,6 +92,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         engine.addSystem(serializationSystem)
         engine.addSystem(rain)
         engine.addSystem(dragging)
+        engine.addSystem(cartSystem)
         stage.addActor(view)
         val multiplexer = InputMultiplexer()
         multiplexer.addProcessor(stage)
