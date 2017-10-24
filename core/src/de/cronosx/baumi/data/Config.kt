@@ -21,7 +21,7 @@ data class Config (
 val config = Config(
     groundHeight = 360f,
     cloudHeight = 500f,
-    initialWater = 180000f,
+    initialWater = 1000f,
     maxWater = 360000f,
     waterEnergyYield = 35f,
     wateringCanCapacity = 10000f,
