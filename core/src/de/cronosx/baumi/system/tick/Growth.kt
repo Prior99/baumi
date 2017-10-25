@@ -135,6 +135,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 rotation = Math.random().toFloat() * Math.PI.toFloat() * 2f
                 positionAlongBranch = randomPositionAlongBranch
                 parent = entity
+                age = 0
             }
             with<Consumer> {
                 maxEnergy = fruitsGene.maxEnergy

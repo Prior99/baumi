@@ -18,6 +18,7 @@ import com.badlogic.gdx.input.GestureDetector.*
 import com.badlogic.gdx.input.*
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.InputMultiplexer
+import de.cronosx.baumi.system.Renderer
 
 class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val engine = PooledEngine()
@@ -35,6 +36,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val clouds = Clouds()
     val cartSystem = CartSystem()
     val renderer = Renderer(batch, ticker)
+    val fertilizer = Fertilizer()
     val debugRenderer = DebugRenderer(shapeRenderer)
 
     fun projectCoords(x: Int, y: Int): Vector2 {
@@ -91,8 +93,9 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
         engine.addSystem(debugRenderer)
         engine.addSystem(serializationSystem)
         engine.addSystem(rain)
-        engine.addSystem(dragging)
         engine.addSystem(cartSystem)
+        engine.addSystem(fertilizer)
+        engine.addSystem(dragging)
         stage.addActor(view)
         val multiplexer = InputMultiplexer()
         multiplexer.addProcessor(stage)

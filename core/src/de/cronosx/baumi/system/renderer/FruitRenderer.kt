@@ -29,17 +29,17 @@ class FruitRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) 
         val growingStartAge = 0
         val bloomingStartAge = growingStartAge + geneFruit.growingDuration
         val fruitStartAge = bloomingStartAge + geneFruit.bloomingDuration
-        val fruitEndAge = bloomingStartAge + geneFruit.fruitDuration
+        val fruitEndAge = fruitStartAge + geneFruit.fruitDuration
         val age = fruit.age
 
         // Calculate x and y offset in texture.
-        val x = textureWidth * (
-            if (age < bloomingStartAge) bloomIndex * age.toFloat() / geneFruit.growingDuration.toFloat()
-            else if (age < fruitStartAge) bloomIndex.toFloat()
-            else if (age < fruitEndAge) bloomIndex.toFloat() +
-                (fruitIndex - bloomIndex) * (age.toFloat() - fruitStartAge).toFloat() / geneFruit.fruitDuration
-            else fruitIndex.toFloat()
-        ).toInt()
+        val x = textureWidth * when {
+            age < bloomingStartAge -> bloomIndex * age.toFloat() / geneFruit.growingDuration.toFloat()
+            age < fruitStartAge -> bloomIndex.toFloat()
+            age < fruitEndAge -> bloomIndex.toFloat() +
+                    (fruitIndex - bloomIndex) * (age.toFloat() - fruitStartAge) / geneFruit.fruitDuration
+            else -> fruitIndex.toFloat()
+        }.toInt()
         // Create sprite and render it.
         val cropped = TextureRegion(texture, x, 0, textureWidth, textureHeight)
         val sprite = Sprite(cropped)
@@ -48,7 +48,11 @@ class FruitRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) 
         sprite.rotation = radiansToDegrees * fruit.rotation
         // Render at the given position
         sprite.setPosition(position.x, position.y)
-        sprite.setScale(0.6f)
+        sprite.setScale(0.5f +
+                if (age > fruitStartAge)
+                    ((minOf(age, fruitEndAge) - fruitStartAge).toFloat() / geneFruit.fruitDuration) * 0.5f
+                else 0f
+        )
         sprite.translate(-textureWidth / 2f, -textureHeight / 2f)
         sprite.draw(batch)
     }

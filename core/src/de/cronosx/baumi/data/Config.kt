@@ -15,7 +15,11 @@ data class Config (
     val clouds: Int,
     val dropContent: Float,
     val dropsPerSecond: Float,
-    val maxCartContent: Int
+    val maxCartContent: Int,
+    val maxFertilizerContent: Int,
+    val maxFertilizerBuffer: Float,
+    val fertilizerYield: Float,
+    val fertilizerCost: Int
 )
 
 val config = Config(
@@ -23,7 +27,7 @@ val config = Config(
     cloudHeight = 500f,
     initialWater = 1000f,
     maxWater = 360000f,
-    waterEnergyYield = 35f,
+    waterEnergyYield = 15f,
     wateringCanCapacity = 10000f,
     tickSpeed = 2f,
     serializationInterval = 10f,
@@ -33,5 +37,9 @@ val config = Config(
     clouds = 4,
     dropContent = 50f,
     dropsPerSecond = 5f,
-    maxCartContent = 35
+    maxCartContent = 35,
+    maxFertilizerContent = 12,
+    maxFertilizerBuffer = 70000f,
+    fertilizerYield = 0.5f,
+    fertilizerCost = 5
 )

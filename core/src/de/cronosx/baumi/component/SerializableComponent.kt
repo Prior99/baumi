@@ -33,6 +33,8 @@ fun deserializeComponent(obj: JsonObject, engine: Engine): Component? {
         "RainDrop" -> RainDrop(obj)
         "Draggable" -> Draggable(obj)
         "Cart" -> Cart(obj)
+        "FertilizerBag" -> FertilizerBag(obj)
+        "FertilizerGrain" -> FertilizerGrain(obj)
         else -> null
     }
 }

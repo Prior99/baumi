@@ -29,6 +29,7 @@ class CartSystem() : IteratingSystem(allOf(Position::class, Cart::class).get()) 
                 if (cart.angle >= 0.0f) {
                     position.x -= event.delta.x
                 }
+                position.x = maxOf(position.x, -150f)
                 deltaY += event.delta.y
                 deltaY = FloatMath.clamp(deltaY, -300f, 300f)
                 cart.angle = FloatMath.clamp(FloatMath.asin(-deltaY / 300f), -maxAngle, maxAngle)

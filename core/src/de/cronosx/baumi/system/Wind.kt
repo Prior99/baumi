@@ -16,7 +16,7 @@ class Wind() : IteratingSystem(
     override fun processEntity(entity: Entity, delta: Float) {
         val position = positions.get(entity).position
         val movable = movables.get(entity)
-        if (position.y < config.groundHeight || movable.fixed) {
+        if (position.y <= config.groundHeight || movable.fixed) {
             return
         }
         position.x += (delta * world.windDirection) / (movable.weight / 100f)

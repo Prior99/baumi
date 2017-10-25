@@ -18,6 +18,7 @@ class Gravity() : IteratingSystem(
         val movable = movables.get(entity)
         if (position.y > config.groundHeight && !movable.floating && !movable.fixed) {
             position.y -= movable.weight * delta
+            position.y = maxOf(config.groundHeight, position.y)
         }
     }
 }
