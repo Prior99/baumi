@@ -19,7 +19,8 @@ data class Config (
     val maxFertilizerContent: Int,
     val maxFertilizerBuffer: Float,
     val fertilizerYield: Float,
-    val fertilizerCost: Int
+    val fertilizerCost: Int,
+    val maxReplayTicks: Int
 )
 
 val config = Config(
@@ -41,5 +42,6 @@ val config = Config(
     maxFertilizerContent = 12,
     maxFertilizerBuffer = 70000f,
     fertilizerYield = 0.5f,
-    fertilizerCost = 5
+    fertilizerCost = 5,
+    maxReplayTicks = 20000
 )

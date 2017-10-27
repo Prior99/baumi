@@ -22,7 +22,7 @@ class TimeRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
     val formatter = PeriodFormatterBuilder()
             .appendYears().appendSuffix("y", "y").appendSeparator(" ")
             .appendDays().appendSuffix("d", "d").appendSeparator(" ")
-            .appendHours().appendSuffix("h", " ").appendSeparator(" ")
+            .appendHours().appendSuffix("h", "h").appendSeparator(" ")
             .appendMinutes().appendSuffix("m", "m").appendSeparator(" ")
             .appendSeconds().appendSuffix(" ", "s")
             .toFormatter()

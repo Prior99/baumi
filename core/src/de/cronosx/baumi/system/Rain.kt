@@ -72,7 +72,7 @@ class Rain() : EntitySystem() {
         // Decrease the time contingent by the spent time.
         timeContingent -= dropsPerTime / config.dropsPerSecond
         // Increase the amount of drops to spawn according to the amount of pixels moved.
-        val movedModifier = delta * movementDelta!!.len() * 20f
+        val movedModifier = if (cloudPosition.y == config.cloudHeight) 0f else delta * movementDelta!!.len() * 20f
         val dropsToSpawn = dropsPerTime * movedModifier
         // Spawn drops.
         for(i in 0 until dropsToSpawn.toInt()) {

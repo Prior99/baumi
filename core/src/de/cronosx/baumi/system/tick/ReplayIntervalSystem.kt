@@ -18,6 +18,7 @@ abstract class ReplayIntervalSystem(
         val calendar = debugCalendar?.let { debugCalendar } ?: Calendar.getInstance()
         val now = calendar.timeInMillis.toDouble() / 1000.0
         // The amount of seconds passed since the last calculated tick.
+        world.lastTick = maxOf(world.lastTick, now - config.maxReplayTicks / config.tickSpeed)
         var timePassed = now - world.lastTick
         val ticksToCalculate = Math.floor(timePassed * interval).toInt()
         // If more than `config.maxTicksPerInterval` tick have to be calculated this call will not manage to
