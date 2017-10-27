@@ -11,7 +11,7 @@ import kotlin.system.measureTimeMillis
 
 fun Double.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
 
-class Ticker() : ReplayIntervalSystem(1 / config.tickSpeed) {
+class Ticker() : ReplayIntervalSystem(config.tickSpeed) {
     var subSystems: List<TickSubSystem> = ArrayList()
     val movables = mapperFor<Movable>()
     val leafs = mapperFor<Leaf>()
