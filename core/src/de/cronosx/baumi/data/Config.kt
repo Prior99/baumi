@@ -1,5 +1,23 @@
 package de.cronosx.baumi.data
 
+class Version(
+    val major: Int,
+    val minor: Int,
+    val patch: Int
+) {
+    constructor(version: String) : this(
+            version.split("\\.").getOrElse(0, { "0" }).toInt(),
+            version.split("\\.").getOrElse(1, { "0" }).toInt(),
+            version.split("\\.").getOrElse(2, { "0" }).toInt()) {}
+    override fun toString(): String {
+        return "$major.$minor.$patch"
+    }
+
+    fun isCompatible(other: Version): Boolean {
+        return other.major == major;
+    }
+}
+
 data class Config (
     val groundHeight: Float,
     val cloudHeight: Float,
@@ -20,7 +38,8 @@ data class Config (
     val maxFertilizerBuffer: Float,
     val fertilizerYield: Float,
     val fertilizerCost: Int,
-    val maxReplayTicks: Int
+    val maxReplayTicks: Int,
+    val version: Version
 )
 
 val config = Config(
@@ -43,5 +62,6 @@ val config = Config(
     maxFertilizerBuffer = 70000f,
     fertilizerYield = 0.5f,
     fertilizerCost = 5,
-    maxReplayTicks = 20000
+    maxReplayTicks = 20000,
+    version = Version(2, 0, 0)
 )

@@ -13,8 +13,6 @@ import ktx.ashley.*
 import ktx.math.*
 import ktx.log.*
 
-val version = 1
-
 class SerializationSystem() : IntervalSystem(config.serializationInterval) {
     val uuids = mapperFor<Uuid>()
 
@@ -83,6 +81,14 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
         }
         val parser = JsonParser()
         val obj = parser.parse(files[0].readString())
+        val saveGameVersion = obj["version"].nullString?.let { Version(it) } ?: Version(0, 0, 0)
+        info { "Savegame version: ${saveGameVersion}" }
+        info { "Software version: ${config.version}" }
+        if (!saveGameVersion.isCompatible(config.version)) {
+            error { "Migrating of savegames not yet implemented. Starting new game." }
+            newGame(engine)
+            return
+        }
         world = World(obj["world"].obj)
         info { "Loaded game \"${world.id}\" with name \"${world.name}\"." }
         info { "Game is at tick ${world.tick}" }
@@ -141,7 +147,7 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
         val obj = jsonObject(
             "entities" to entities,
             "world" to world.toJson(),
-            "version" to version,
+            "version" to config.version.toString(),
             "timestamp" to System.currentTimeMillis()
         )
         val json = obj.toString()
