@@ -30,7 +30,7 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
     val shapeRenderer = ShapeRenderer()
     val ticker = Ticker()
     val rain = Rain()
-    val dragging = Dragging()
+    val dragging = Dragging(ticker)
     val gravity = Gravity()
     val wind = Wind()
     val clouds = Clouds()
