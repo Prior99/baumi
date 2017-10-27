@@ -23,6 +23,7 @@ class Renderer(var batch: Batch, val ticker: Ticker) : EntitySystem() {
     var loading: LoadingRenderer? = null
     var fertilizerBags: FertilizerBagRenderer? = null
     var fertilizerGrains: FertilizerGrainRenderer? = null
+    var time: TimeRenderer? = null
 
     override fun addedToEngine(engine: Engine) {
         branches = BranchRenderer(batch, engine)
@@ -35,6 +36,7 @@ class Renderer(var batch: Batch, val ticker: Ticker) : EntitySystem() {
         loading = LoadingRenderer(batch, engine, ticker)
         fertilizerBags = FertilizerBagRenderer(batch, engine)
         fertilizerGrains = FertilizerGrainRenderer(batch, engine)
+        time = TimeRenderer(batch, engine)
         batch.enableBlending()
     }
 
@@ -54,6 +56,7 @@ class Renderer(var batch: Batch, val ticker: Ticker) : EntitySystem() {
         clouds?.render(delta)
         fertilizerBags?.render(delta)
         fertilizerGrains?.render(delta)
+        time?.render(delta)
         loading?.render(delta)
         batch.end()
     }
