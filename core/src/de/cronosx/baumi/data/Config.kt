@@ -6,9 +6,9 @@ class Version(
     val patch: Int
 ) {
     constructor(version: String) : this(
-            version.split("\\.").getOrElse(0, { "0" }).toInt(),
-            version.split("\\.").getOrElse(1, { "0" }).toInt(),
-            version.split("\\.").getOrElse(2, { "0" }).toInt()) {}
+            version.split(".").getOrElse(0, { "0" }).toInt(),
+            version.split(".").getOrElse(1, { "0" }).toInt(),
+            version.split(".").getOrElse(2, { "0" }).toInt()) {}
     override fun toString(): String {
         return "$major.$minor.$patch"
     }

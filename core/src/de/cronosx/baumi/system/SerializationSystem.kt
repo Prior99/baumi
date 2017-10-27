@@ -86,6 +86,7 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
         info { "Software version: ${config.version}" }
         if (!saveGameVersion.isCompatible(config.version)) {
             error { "Migrating of savegames not yet implemented. Starting new game." }
+            files[0].delete()
             newGame(engine)
             return
         }

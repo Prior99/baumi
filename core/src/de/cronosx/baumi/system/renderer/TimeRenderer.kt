@@ -15,7 +15,7 @@ class TimeRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
     val fontGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/amatic/AmaticSC-Regular.ttf"))
     val font16 = {
         val fontParameters = FreeTypeFontParameter()
-        fontParameters.size = 50
+        fontParameters.size = 80
         fontParameters.color = Color(0.2f, 0.2f, 0.8f, 0.5f)
         fontGenerator.generateFont(fontParameters)
     }()
