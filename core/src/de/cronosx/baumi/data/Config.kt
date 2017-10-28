@@ -63,5 +63,5 @@ val config = Config(
     fertilizerYield = 0.5f,
     fertilizerCost = 5,
     maxReplayTicks = 20000,
-    version = Version(2, 0, 0)
+    version = Version(3, 0, 0)
 )

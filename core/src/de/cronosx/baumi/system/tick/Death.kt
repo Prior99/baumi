@@ -8,12 +8,13 @@ import ktx.ashley.*
 class Death(engine: Engine) : TickSubSystem(engine) {
     val healths = mapperFor<Health>()
     val branches = mapperFor<Branch>()
+    val parents = mapperFor<Parent>()
 
     fun killRecursively(entity: Entity) {
         val health = healths.get(entity)
         health.kill()
-        val branch = branches.get(entity)
-        branch?.children?.forEach { killRecursively(it) }
+        val parent = parents.get(entity)
+        parent?.children?.forEach { killRecursively(it) }
     }
 
     override fun tick(number: Int) {

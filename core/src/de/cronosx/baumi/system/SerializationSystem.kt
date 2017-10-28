@@ -26,7 +26,14 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
                 rotation = defaultDna.rotation.initial
                 length = defaultDna.length.initial
                 maxLength = defaultDna.length.max
+            }
+            with<Parent> {
                 children = ArrayList()
+            }
+            with<Child> {
+                generation = 0
+                parent = null
+                positionAlongParent = 0f
             }
             with<Genetic> {
                 dna = defaultDna

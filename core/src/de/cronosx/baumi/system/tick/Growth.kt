@@ -47,15 +47,19 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
     val positions = mapperFor<Position>()
     val roots = mapperFor<Root>()
     val ages = mapperFor<Age>()
+    val parents = mapperFor<Parent>()
+    val children = mapperFor<Child>()
 
     /**
      * Create a new branch forked from the `parent` entity with the given rotations.
      */
-    fun createBranch(parent: Entity, rotationOffsetFixed: Float, rotationOffsetSpread: Float): Entity {
-        val parentBranch = branches.get(parent)
-        val parentGenetic = genetics.get(parent)
-        val parentHealth = healths.get(parent)
-        val parentConsumer = consumers.get(parent)
+    fun createBranch(parentEntity: Entity, rotationOffsetFixed: Float, rotationOffsetSpread: Float): Entity {
+        val parentBranch = branches.get(parentEntity)
+        val parentChild = children.get(parentEntity)
+        val parentGenetic = genetics.get(parentEntity)
+        val parentHealth = healths.get(parentEntity)
+        val parentConsumer = consumers.get(parentEntity)
+        val parentParent = parents.get(parentEntity)
 
         val rotationOffset = rotationOffsetFixed + lerp(-rotationOffsetSpread, rotationOffsetSpread, Math.random().toFloat())
         val newMaxLength =
@@ -68,8 +72,15 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             with<Branch> {
                 rotation = parentBranch.rotation + rotationOffset
                 maxLength = newMaxLength
-                generation = parentBranch.generation + 1
+            }
+            with<Parent> {
                 children = ArrayList()
+            }
+            with<Child> {
+                generation = parentChild.generation + 1
+                parent = null
+                positionAlongParent = 0f
+
             }
             with<Genetic> {
                 dna = parentGenetic.dna
@@ -85,7 +96,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 rate = parentConsumer.rate * parentGenetic.dna.energy.falloff * lerp(0.8f, 1.5f, Math.random().toFloat())
             }
         }
-        parentBranch.children.add(newBranch)
+        parentParent.children.add(newBranch)
         return newBranch
     }
 
@@ -120,22 +131,26 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
 
     fun growFruit(entity: Entity) {
         val branch = branches.get(entity)
+        val parentComponent = parents.get(entity)
+        val childComponent = children.get(entity)
         val fruitsGene = genetics.get(entity).dna.fruits
         val parentPosition = positions.get(entity).position
         val parentGenetic = genetics.get(entity)
 
         val randomPositionAlongBranch = Math.random().toFloat()
         val dir = getDirectionVectorAlongBranch(branch.length, branch.rotation)
-        branch.children.add(engine.entity {
+        parentComponent.children.add(engine.entity {
             with<Position> {
                 position = dir.cpy().scl(randomPositionAlongBranch) + parentPosition
             }
             with<Fruit> {
-                generation = branch.generation + 1
                 rotation = Math.random().toFloat() * Math.PI.toFloat() * 2f
-                positionAlongBranch = randomPositionAlongBranch
-                parent = entity
                 age = 0
+            }
+            with<Child> {
+                generation = childComponent.generation + 1
+                positionAlongParent = randomPositionAlongBranch
+                parent = entity
             }
             with<Consumer> {
                 maxEnergy = fruitsGene.maxEnergy
@@ -156,20 +171,24 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
      */
     fun growLeaf(entity: Entity) {
         val branch = branches.get(entity)
+        val parentComponent = parents.get(entity)
+        val childComponent = children.get(entity)
         val leafsGene = genetics.get(entity).dna.leafs
         val parentPosition = positions.get(entity).position
 
         val randomPositionAlongBranch = Math.random().toFloat()
         val rotationOffset = Math.random().toFloat() * leafsGene.maxRotationOffset * 2f - leafsGene.maxRotationOffset
         val dir = getDirectionVectorAlongBranch(branch.length, branch.rotation)
-        branch.children.add(engine.entity {
+        parentComponent.children.add(engine.entity {
             with<Position> {
                 position = dir.cpy().scl(randomPositionAlongBranch) + parentPosition
             }
             with<Leaf> {
-                generation = branch.generation + 1
                 rotation = branch.rotation + rotationOffset * Math.PI.toFloat()
-                positionAlongBranch = randomPositionAlongBranch
+            }
+            with<Child> {
+                generation = childComponent.generation + 1
+                positionAlongParent = randomPositionAlongBranch
                 parent = entity
             }
             with<Consumer> {
@@ -193,19 +212,6 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         })
     }
 
-    /**
-     * Calculates the maximum of depth of the (informatical) tree for the given entity.
-     * If the entity is of generation `2` and has children nested 2 levels deep this function will
-     * return `4`.
-     */
-    fun getMaxGeneration(entity: Entity): Int {
-        if (!branches.has(entity)) {
-            return 0
-        }
-        val branch = branches.get(entity)
-        return maxOf(branch.children.map { getMaxGeneration(it) }.max() ?: 0, branch.generation)
-    }
-
     fun maxFruitCount(entity: Entity): Int {
         val branch = branches.get(entity)
         val dna = genetics.get(entity).dna
@@ -216,15 +222,16 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
      * Calculates the maximum amount of leafs for a specific entity based on the length, dna and
      * depth.
      */
-    fun maxLeafCount(entity: Entity): Int {
+    fun maxLeafCount(entity: Entity, depthMap: MutableMap<Entity, Int>): Int {
         val branch = branches.get(entity)
+        val child = children.get(entity)
         val dna = genetics.get(entity).dna
-        val relativeDepth = getMaxGeneration(entity) - branch.generation
+        val relativeDepth = depthMap[entity]!! - child.generation
         return Math.floor(Math.pow(dna.leafs.leafCountFalloff.toDouble(), relativeDepth.toDouble()) *
             dna.leafs.maxGenerationLeafCountPerLength * branch.length).toInt()
     }
 
-    fun life() {
+    fun life(depthMap: MutableMap<Entity, Int>) {
         val consumerEntities = engine.entities
             .filter { consumers.has(it) && (!healths.has(it) || healths.get(it).alive) }
 
@@ -233,15 +240,17 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
                 continue
             }
             val branch = branches.get(entity)
+            val parent = parents.get(entity)
+            val child = children.get(entity)
             val dna = genetics.get(entity).dna
             val consumer = consumers.get(entity)
 
             var surplus = maxOf(consumer.energy - consumer.minEnergy, 0f)
             // 1. Growing leafs
             val canGrowLeaf =
-                branch.children.filter { leafs.has(it) }.count() < maxLeafCount(entity) &&
+                parent.children.filter { leafs.has(it) }.count() < maxLeafCount(entity, depthMap) &&
                 surplus >= dna.leafs.leafCost &&
-                branch.children.filter { leafs.has(it) && ages.get(it).age <= 70 }.count() < dna.leafs.maxYoungLeafs
+                parent.children.filter { leafs.has(it) && ages.get(it).age <= 70 }.count() < dna.leafs.maxYoungLeafs
             if (canGrowLeaf) {
                 growLeaf(entity)
                 consumer.energy -= dna.leafs.leafCost
@@ -249,9 +258,9 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             }
             // 2. Branching
             val canGrowBranches =
-                branch.children.filter { branches.has(it) }.count() == 0 &&
+                parent.children.filter { branches.has(it) }.count() == 0 &&
                 branch.length > dna.branching.minLength * branch.maxLength &&
-                branch.generation < dna.branching.maxDepth &&
+                child.generation < dna.branching.maxDepth &&
                 surplus >= dna.branching.branchCost
             if (canGrowBranches) {
                 growBranches(entity)
@@ -269,10 +278,10 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             }
             // 4. Growing fruits
             val canGrowFruit =
-                branch.children.filter { fruits.has(it) }.count() < maxFruitCount(entity) &&
+                parent.children.filter { fruits.has(it) }.count() < maxFruitCount(entity) &&
                 surplus >= dna.fruits.fruitCost &&
-                branch.generation >= dna.fruits.minGeneration &&
-                branch.children.filter { branches.has(it) }.count() == 0
+                child.generation >= dna.fruits.minGeneration &&
+                parent.children.filter { branches.has(it) }.count() == 0
             if (canGrowFruit) {
                 growFruit(entity)
                 consumer.energy -= dna.fruits.fruitCost
@@ -282,9 +291,9 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         // Kill all obsolete leafs.
         for (entity in consumerEntities) {
             if (branches.has(entity)) {
-                val branch = branches.get(entity)
-                val livingLeafs = branch.children.filter { leafs.has(it) && healths.has(it) && healths.get(it).alive }
-                val maxLeafs = maxLeafCount(entity)
+                val parent = parents.get(entity)
+                val livingLeafs = parent.children.filter { leafs.has(it) && healths.has(it) && healths.get(it).alive }
+                val maxLeafs = maxLeafCount(entity, depthMap)
                 if (livingLeafs.count() > maxLeafs) {
                     for (i in maxLeafs..livingLeafs.size - 1) {
                         // Start losing all inputted (even though energy is put in), resulting in eventual death.
@@ -309,23 +318,37 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             return
         }
         val branch = branches.get(entity)
-        for (child in branch.children) {
-            if (leafs.has(child)) {
-                val leaf = leafs.get(child)
-                var childPosition = positions.get(child)
-                childPosition.position = getChildPosition(position, branch, leaf.positionAlongBranch)
-            } else if (fruits.has(child)) {
-                val fruit = fruits.get(child)
-                var childPosition = positions.get(child)
-                childPosition.position = getChildPosition(position, branch, fruit.positionAlongBranch)
-            } else {
+        val parent = parents.get(entity)
+        for (child in parent.children) {
+            if (parents.has(child)) {
                 adjust(child, getChildPosition(position, branch))
+            } else {
+                val childComponent = children.get(child)
+                var childPosition = positions.get(child)
+                childPosition.position = getChildPosition(position, branch, childComponent.positionAlongParent)
             }
         }
     }
 
+    fun calculateDepthMap(entity: Entity, depthMap: MutableMap<Entity, Int>): Int {
+        val child = children.get(entity)
+        if (!parents.has(entity)) {
+            val depth = child?.generation ?: 0
+            depthMap[entity] = depth
+            return depth
+        }
+        val parent = parents.get(entity)
+        val maxDepth = maxOf(parent.children.map { calculateDepthMap(it, depthMap) }.max() ?: 0, child.generation)
+        depthMap[entity] = maxDepth
+        return maxDepth
+    }
+
     override fun tick(number: Int) {
-        life()
+        val depthMap = mutableMapOf<Entity, Int>()
+        engine.entities
+                .filter { roots.has(it) }
+                .forEach { calculateDepthMap(it, depthMap) }
+        life(depthMap)
         engine.entities
                 .filter { roots.has(it) }
                 .forEach { adjust(it) }

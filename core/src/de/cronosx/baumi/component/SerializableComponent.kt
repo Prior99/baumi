@@ -15,16 +15,16 @@ abstract class SerializableComponent : Component {
 fun deserializeComponent(obj: JsonObject, engine: Engine): Component? {
     return when (obj["type"].string) {
         "Age" -> Age(obj)
-        "Branch" -> Branch(obj, engine)
+        "Branch" -> Branch(obj)
         "Buffer" -> Buffer(obj)
         "Cloud" -> Cloud(obj)
         "Consumer" -> Consumer(obj)
         "Decompose" -> Decompose(obj)
-        "Fruit" -> Fruit(obj, engine)
+        "Fruit" -> Fruit(obj)
         "Genetic" -> Genetic(obj)
         "GroundWater" -> GroundWater(obj)
         "Health" -> Health(obj)
-        "Leaf" -> Leaf(obj, engine)
+        "Leaf" -> Leaf(obj)
         "Movable" -> Movable(obj)
         "Position" -> Position(obj)
         "Producer" -> Producer(obj)
@@ -35,6 +35,8 @@ fun deserializeComponent(obj: JsonObject, engine: Engine): Component? {
         "Cart" -> Cart(obj)
         "FertilizerBag" -> FertilizerBag(obj)
         "FertilizerGrain" -> FertilizerGrain(obj)
+        "Child" -> Child(obj, engine)
+        "Parent" -> Parent(obj, engine)
         else -> null
     }
 }

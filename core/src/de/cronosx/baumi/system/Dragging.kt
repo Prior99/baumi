@@ -8,10 +8,11 @@ import de.cronosx.baumi.Bus
 import de.cronosx.baumi.events.Drag
 import de.cronosx.baumi.events.DragStart
 import de.cronosx.baumi.events.DragStop
+import de.cronosx.baumi.system.tick.Ticker
 import ktx.ashley.*
 import ktx.math.*
 
-class Dragging() : EntitySystem() {
+class Dragging(val ticker: Ticker) : EntitySystem() {
     data class CurrentTarget(
             val entity: Entity,
             val offsetToCursor: Vector2
@@ -23,6 +24,9 @@ class Dragging() : EntitySystem() {
     var current: CurrentTarget? = null
 
     fun touchDown(touchPosition: Vector2) {
+        if (ticker.replaying) {
+            return
+        }
         val targetEntity = engine.entities
                 .filter{ draggables.has(it) && positions.has(it) }
                 .find{
@@ -48,6 +52,9 @@ class Dragging() : EntitySystem() {
     }
 
     fun touchUp() {
+        if (ticker.replaying) {
+            return
+        }
         if (current != null) {
             Bus.emit(DragStop(current!!.entity))
             current = null
@@ -55,6 +62,9 @@ class Dragging() : EntitySystem() {
     }
 
     fun touchDragged(touchPosition: Vector2) {
+        if (ticker.replaying) {
+            return
+        }
         if (current == null) {
             return
         }

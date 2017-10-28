@@ -63,7 +63,11 @@ abstract class ReplayIntervalSystem(
             // If the tick interval is 2 (=two ticks per second) and 100 ticks have been calculated the time of
             // the last calculated tick needs to be increased by 50 seconds, because
             // (1 second / 2 ticks) * 100 ticks = 50 seconds.
-            world.lastTick += secondsPerTick * ticked
+            if (debug.extremeSpeed) {
+                world.lastTick = now
+            } else {
+                world.lastTick += secondsPerTick * ticked
+            }
         }.toDouble() / 1000.0
         // Info how long it took to calculate all ticks.
         if (calculationTime > secondsPerTick || ticksToCalculate > 1) {

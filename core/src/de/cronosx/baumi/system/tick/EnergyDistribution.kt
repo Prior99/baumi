@@ -1,6 +1,9 @@
 package de.cronosx.baumi.system.tick
 
 import com.badlogic.ashley.core.Engine
+import com.badlogic.gdx.Application.LOG_DEBUG
+import com.badlogic.gdx.Game
+import com.badlogic.gdx.Gdx
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.data.*
 import ktx.ashley.entity
@@ -16,6 +19,8 @@ class EnergyDistribution(engine: Engine) : TickSubSystem(engine) {
     val consumers = mapperFor<Consumer>()
     val producers = mapperFor<Producer>()
 
+    var efficiency = 0f
+
     override fun tick(number: Int) {
         // Of course, we only care about living entities in the life() function :)
         val livingEntities = engine.entities
@@ -30,13 +35,15 @@ class EnergyDistribution(engine: Engine) : TickSubSystem(engine) {
         val totalConsumption = consumerEntities
             .sumByDouble({ consumers.get(it).rate.toDouble() }).toFloat()
         // This value controls that all consumers get less / more according to the production.
-        val efficiency = totalProduction / totalConsumption
+        efficiency = totalProduction / totalConsumption
         // Log the current production and consumption as well as the efficiency.
-        val efficiencyString = "%.1f %%".format(efficiency * 100)
-        debug {
-            "Production:  $totalProduction (${producerEntities.count()} producers)\n" +
-            "Consumption: $totalConsumption (${consumerEntities.count()} consumers)\n" +
-            "Efficiency:  $efficiencyString"
+        if (Gdx.app.logLevel == LOG_DEBUG) {
+            val efficiencyString = "%.1f %%".format(efficiency * 100)
+            debug {
+                "Production:  $totalProduction (${producerEntities.count()} producers)\n" +
+                "Consumption: $totalConsumption (${consumerEntities.count()} consumers)\n" +
+                "Efficiency:  $efficiencyString"
+            }
         }
         // Give everybody energy in proportion to their demand and availability
         var leftoverEnergy = 0f

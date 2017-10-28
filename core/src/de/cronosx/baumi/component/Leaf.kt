@@ -8,25 +8,16 @@ import com.google.gson.JsonObject
 import ktx.log.*
 
 class Leaf(
-    var rotation: Float = 0f,
-    var generation: Int = 0,
-    var positionAlongBranch: Float = 1f,
-    var parent: Entity? = null
+    var rotation: Float = 0f
 ) : SerializableComponent() {
-    constructor(obj: JsonObject, engine: Engine) : this(
-        obj["rotation"].float,
-        obj["generation"].int,
-        obj["positionAlongBranch"].float,
-        engine.entities.find { uuids.get(it).id == obj["parent"].nullString }
+    constructor(obj: JsonObject) : this(
+        obj["rotation"].float
     ) {}
 
     override fun toJson(): JsonObject {
         return jsonObject(
             "type" to "Leaf",
-            "rotation" to rotation,
-            "generation" to generation,
-            "positionAlongBranch" to positionAlongBranch,
-            "parent" to if (parent != null) uuids.get(parent).id else null
+            "rotation" to rotation
         )
     }
 }

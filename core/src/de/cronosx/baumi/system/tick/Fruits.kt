@@ -13,6 +13,8 @@ class Fruits(engine: Engine) : TickSubSystem(engine) {
     val movables = mapperFor<Movable>()
     val positions = mapperFor<Position>()
     val carts = mapperFor<Cart>()
+    val children = mapperFor<Child>()
+    val parents = mapperFor<Parent>()
 
     override fun tick(number: Int) {
         val cartEntity = engine.entities.find { carts.has(it) && positions.has(it) }
@@ -24,15 +26,16 @@ class Fruits(engine: Engine) : TickSubSystem(engine) {
                     val fruit = fruits.get(it)
                     val consumer = consumers.get(it)
                     val movable = movables.get(it)
+                    val child = children.get(it)
                     val position = positions.get(it).position
                     val fruitGene = genetics.get(it).dna.fruits
                     if (consumer.energy > 0) {
                         fruit.age++
                     }
                     val duration = fruitGene.growingDuration + fruitGene.bloomingDuration + fruitGene.fruitDuration
-                    if (fruit.age > duration && fruit.parent != null) {
-                        branches.get(fruit.parent).children.remove(it)
-                        fruit.parent = null
+                    if (fruit.age > duration && child.parent != null) {
+                        parents.get(child.parent).children.remove(it)
+                        child.parent = null
                         movable.floating = false
                         movable.fixed = false
                     }
