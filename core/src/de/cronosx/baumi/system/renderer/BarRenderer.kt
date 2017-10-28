@@ -23,23 +23,22 @@ class BarRenderer(val batch: Batch, engine: Engine, val ticker: Ticker) : Render
     override fun render(delta: Float) {
         // Render water.
         val groundWater = buffers.get(engine.entities.find { groundWaters.has(it) })
-        val currentWater = groundWater.current / groundWater.max
-        val progress = maxOf(currentWater, 0.05f)
-        batch.draw(TextureRegion(textureBarWater, 500, 0, (500 * progress).toInt(), 70), 580f, 1850f)
+        val currentWater = maxOf(groundWater.current / groundWater.max, 0.05f)
+        val waterBarTexture = when {
+            currentWater > 0.25 -> TextureRegion(textureBarWater, 500, 0, (500 * currentWater).toInt(), 70)
+            else -> TextureRegion(textureBarWater, 1000, 0, (500 * currentWater).toInt(), 70)
+        }
+        batch.draw(waterBarTexture, 580f, 1850f)
         batch.draw(TextureRegion(textureBarWater, 0, 0, 500, 70), 580f, 1850f)
         // Render life.
         val efficiency = (ticker.subSystems.find { it is EnergyDistribution } as EnergyDistribution).efficiency
-        if (efficiency > 1.5f) {
-            val progress = FloatMath.clamp((efficiency - 1.5f) / 4.0f, 0.0f, 1.0f)
-            batch.draw(TextureRegion(textureBarLife, 500, 0, (500 * progress).toInt(), 70), 580f, 1780f)
+        val normalizedEfficiency = FloatMath.clamp(efficiency / 3.0f, 0.05f, 1.0f)
+        val efficienyBarTexture = when {
+            normalizedEfficiency > 0.75f -> TextureRegion(textureBarLife, 1000, 0, (500 * normalizedEfficiency).toInt(), 70)
+            normalizedEfficiency > 0.25f -> TextureRegion(textureBarLife, 500, 0, (500 * normalizedEfficiency).toInt(), 70)
+            else -> TextureRegion(textureBarLife, 1500, 0, (500 * normalizedEfficiency).toInt(), 70)
         }
-        else if (efficiency > 1.0f) {
-            val progress = FloatMath.clamp((efficiency - 1.0f) / 0.5f, 0.0f, 1.0f)
-            batch.draw(TextureRegion(textureBarLife, 0, 0, (500 * progress).toInt(), 70), 580f, 1780f)
-        } else {
-            val progress = FloatMath.clamp(efficiency, 0.0f, 1.0f)
-            batch.draw(TextureRegion(textureBarLife, 1000, 0, (500 * progress).toInt(), 70), 580f, 1780f)
-        }
+        batch.draw(efficienyBarTexture, 580f, 1780f)
         batch.draw(TextureRegion(textureBarLife, 0, 0, 500, 70), 580f, 1780f)
     }
 }
