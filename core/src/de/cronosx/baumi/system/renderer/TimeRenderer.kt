@@ -24,7 +24,7 @@ class TimeRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
             .appendDays().appendSuffix("d", "d").appendSeparator(" ")
             .appendHours().appendSuffix("h", "h").appendSeparator(" ")
             .appendMinutes().appendSuffix("m", "m").appendSeparator(" ")
-            .appendSeconds().appendSuffix(" ", "s")
+            .appendSeconds().appendSuffix("s", "s")
             .toFormatter()
 
     override fun render(delta: Float) {
@@ -32,4 +32,3 @@ class TimeRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
         font16.draw(batch, formatter.print(period), 10f, 1900f)
     }
 }
-
