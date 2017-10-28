@@ -13,6 +13,7 @@ import ktx.inject.Context
 import ktx.async.enableKtxCoroutines
 import de.cronosx.baumi.view.Game
 import de.cronosx.baumi.data.*
+import de.cronosx.baumi.view.MainMenu
 import ktx.scene2d.Scene2DSkin
 
 val appWidth = 1080f
@@ -33,9 +34,11 @@ class Application : KtxGame<Screen>() {
             Scene2DSkin.defaultSkin = inject()
             bindSingleton(this@Application)
             bindSingleton(Game(inject(), inject()))
+            bindSingleton(MainMenu(inject(), inject(), inject()))
         }
         addScreen(context.inject<Game>())
-        setScreen<Game>()
+        addScreen(context.inject<MainMenu>())
+        setScreen<MainMenu>()
     }
 
     override fun dispose () {

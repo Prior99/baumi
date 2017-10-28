@@ -7,13 +7,11 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.TextureRegion
-import de.cronosx.baumi.Math.FloatMath
 import de.cronosx.baumi.component.Branch
 import de.cronosx.baumi.component.Consumer
 import de.cronosx.baumi.component.Health
 import de.cronosx.baumi.component.Position
 import ktx.ashley.mapperFor
-import ktx.log.info
 
 class BranchRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
     val branches = mapperFor<Branch>()
