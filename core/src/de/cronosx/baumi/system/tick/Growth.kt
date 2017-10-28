@@ -334,12 +334,12 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         val branch = branches.get(entity)
         val parent = parents.get(entity)
         for (child in parent.children) {
-            if (children.has(child)) {
+            if (parents.has(child)) {
+                adjust(child, getChildPosition(position, branch))
+            } else {
                 val childComponent = children.get(child)
                 var childPosition = positions.get(child)
                 childPosition.position = getChildPosition(position, branch, childComponent.positionAlongParent)
-            } else {
-                adjust(child, getChildPosition(position, branch))
             }
         }
     }
