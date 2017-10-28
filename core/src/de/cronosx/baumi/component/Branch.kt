@@ -9,18 +9,12 @@ import ktx.ashley.*
 class Branch(
     var rotation: Float = 0f,
     var length: Float = 0f,
-    var maxLength: Float = 0f,
-    var generation: Int = 0,
-    var children: MutableList<Entity> = ArrayList()
+    var maxLength: Float = 0f
 ) : SerializableComponent() {
-    constructor(obj: JsonObject, engine: Engine) : this(
+    constructor(obj: JsonObject) : this(
         obj["rotation"].float,
         obj["length"].float,
-        obj["maxLength"].float,
-        obj["generation"].int,
-        obj["children"].array.map { child ->
-            engine.entities.find { uuids.get(it).id == child.string } as Entity
-        }.toMutableList()
+        obj["maxLength"].float
     ) {}
 
     override fun toJson(): JsonObject {
@@ -28,9 +22,7 @@ class Branch(
             "type" to "Branch",
             "rotation" to rotation,
             "length" to length,
-            "maxLength" to maxLength,
-            "generation" to generation,
-            "children" to jsonArray(children.map { uuids.get(it).id })
+            "maxLength" to maxLength
         )
     }
 }

@@ -8,16 +8,10 @@ import com.google.gson.JsonObject
 
 class Fruit(
     var rotation: Float = 0f,
-    var generation: Int = 0,
-    var positionAlongBranch: Float = 1f,
-    var parent: Entity? = null,
     var age: Int = 0
 ) : SerializableComponent() {
-    constructor(obj: JsonObject, engine: Engine) : this(
+    constructor(obj: JsonObject) : this(
         obj["rotation"].float,
-        obj["generation"].int,
-        obj["positionAlongBranch"].float,
-        engine.entities.find { uuids.get(it).id == obj["parent"].nullString },
         obj["age"].int
     ) {}
 
@@ -25,9 +19,6 @@ class Fruit(
         return jsonObject(
             "type" to "Fruit",
             "rotation" to rotation,
-            "generation" to generation,
-            "positionAlongBranch" to positionAlongBranch,
-            "parent" to if (parent != null) uuids.get(parent).id else null,
             "age" to age
         )
     }

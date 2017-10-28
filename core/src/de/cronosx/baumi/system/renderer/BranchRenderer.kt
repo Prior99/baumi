@@ -8,15 +8,13 @@ import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import de.cronosx.baumi.Math.FloatMath
-import de.cronosx.baumi.component.Branch
-import de.cronosx.baumi.component.Consumer
-import de.cronosx.baumi.component.Health
-import de.cronosx.baumi.component.Position
+import de.cronosx.baumi.component.*
 import ktx.ashley.mapperFor
 import ktx.log.info
 
 class BranchRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine) {
     val branches = mapperFor<Branch>()
+    val children = mapperFor<Child>()
     val consumers = mapperFor<Consumer>()
     val positions = mapperFor<Position>()
     val healths = mapperFor<Health>()
@@ -31,8 +29,9 @@ class BranchRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine)
     fun processEntity(entity: Entity, delta: Float) {
         val position = positions.get(entity).position
         val branch = branches.get(entity)
+        val child = children.get(entity)
         val health = healths.get(entity)
-        val tex = if (branch.generation == 0) trunkTexture else branchTexture
+        val tex = if (child.generation == 0) trunkTexture else branchTexture
         val sprite = Sprite(tex)
         sprite.setPosition(position.x, position.y)
         sprite.setScale(branch.length / tex.width)
@@ -49,7 +48,7 @@ class BranchRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(engine)
         }
         val strength = maxOf((consumer.energy - consumer.minEnergy) / (consumer.maxEnergy - consumer.minEnergy), 0f)
         for (i in 0 .. (strength * frames).toInt()) {
-            val frame = (i + (branch.generation % 2) * virtualFrames + time.toInt()) % virtualFrames
+            val frame = (i + (child.generation % 2) * virtualFrames + time.toInt()) % virtualFrames
             if (frame >= 12) {
                 continue
             }

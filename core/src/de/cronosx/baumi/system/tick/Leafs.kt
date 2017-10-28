@@ -9,6 +9,8 @@ class Leafs(engine: Engine) : TickSubSystem(engine) {
     val leafs = mapperFor<Leaf>()
     val branches = mapperFor<Branch>()
     val movables = mapperFor<Movable>()
+    val children = mapperFor<Child>()
+    val parents = mapperFor<Parent>()
 
     override fun tick(number: Int) {
         engine.entities
@@ -17,13 +19,14 @@ class Leafs(engine: Engine) : TickSubSystem(engine) {
             val decompose = decomposes.get(entity)
             val movable = movables.get(entity)
             val leaf = leafs.get(entity)
+            val child = children.get(entity)
             if (decompose.current > 3f) {
                 movable.floating = false
                 movable.fixed = false
-                if (leaf.parent != null) {
-                    val parentBranch = branches.get(leaf.parent)
-                    parentBranch.children.remove(entity)
-                    leaf.parent = null
+                if (child.parent != null) {
+                    val parent = parents.get(child.parent)
+                    parent.children.remove(entity)
+                    child.parent = null
                 }
             }
         }
