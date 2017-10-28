@@ -212,20 +212,6 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         })
     }
 
-    /**
-     * Calculates the maximum of depth of the (informatical) tree for the given entity.
-     * If the entity is of generation `2` and has children nested 2 levels deep this function will
-     * return `4`.
-     */
-    fun getMaxGeneration(entity: Entity): Int {
-        if (!branches.has(entity)) {
-            return 0
-        }
-        val parent = parents.get(entity)
-        val child = children.get(entity)
-        return maxOf(parent.children.map { getMaxGeneration(it) }.max() ?: 0, child.generation)
-    }
-
     fun maxFruitCount(entity: Entity): Int {
         val branch = branches.get(entity)
         val dna = genetics.get(entity).dna
@@ -236,16 +222,16 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
      * Calculates the maximum amount of leafs for a specific entity based on the length, dna and
      * depth.
      */
-    fun maxLeafCount(entity: Entity): Int {
+    fun maxLeafCount(entity: Entity, depthMap: MutableMap<Entity, Int>): Int {
         val branch = branches.get(entity)
         val child = children.get(entity)
         val dna = genetics.get(entity).dna
-        val relativeDepth = getMaxGeneration(entity) - child.generation
+        val relativeDepth = depthMap[entity]!! - child.generation
         return Math.floor(Math.pow(dna.leafs.leafCountFalloff.toDouble(), relativeDepth.toDouble()) *
             dna.leafs.maxGenerationLeafCountPerLength * branch.length).toInt()
     }
 
-    fun life() {
+    fun life(depthMap: MutableMap<Entity, Int>) {
         val consumerEntities = engine.entities
             .filter { consumers.has(it) && (!healths.has(it) || healths.get(it).alive) }
 
@@ -262,7 +248,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             var surplus = maxOf(consumer.energy - consumer.minEnergy, 0f)
             // 1. Growing leafs
             val canGrowLeaf =
-                parent.children.filter { leafs.has(it) }.count() < maxLeafCount(entity) &&
+                parent.children.filter { leafs.has(it) }.count() < maxLeafCount(entity, depthMap) &&
                 surplus >= dna.leafs.leafCost &&
                 parent.children.filter { leafs.has(it) && ages.get(it).age <= 70 }.count() < dna.leafs.maxYoungLeafs
             if (canGrowLeaf) {
@@ -307,7 +293,7 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
             if (branches.has(entity)) {
                 val parent = parents.get(entity)
                 val livingLeafs = parent.children.filter { leafs.has(it) && healths.has(it) && healths.get(it).alive }
-                val maxLeafs = maxLeafCount(entity)
+                val maxLeafs = maxLeafCount(entity, depthMap)
                 if (livingLeafs.count() > maxLeafs) {
                     for (i in maxLeafs..livingLeafs.size - 1) {
                         // Start losing all inputted (even though energy is put in), resulting in eventual death.
@@ -344,8 +330,25 @@ class Growth(engine: Engine) : TickSubSystem(engine) {
         }
     }
 
+    fun calculateDepthMap(entity: Entity, depthMap: MutableMap<Entity, Int>): Int {
+        val child = children.get(entity)
+        if (!parents.has(entity)) {
+            val depth = child?.generation ?: 0
+            depthMap[entity] = depth
+            return depth
+        }
+        val parent = parents.get(entity)
+        val maxDepth = maxOf(parent.children.map { calculateDepthMap(it, depthMap) }.max() ?: 0, child.generation)
+        depthMap[entity] = maxDepth
+        return maxDepth
+    }
+
     override fun tick(number: Int) {
-        life()
+        val depthMap = mutableMapOf<Entity, Int>()
+        engine.entities
+                .filter { roots.has(it) }
+                .forEach { calculateDepthMap(it, depthMap) }
+        life(depthMap)
         engine.entities
                 .filter { roots.has(it) }
                 .forEach { adjust(it) }
