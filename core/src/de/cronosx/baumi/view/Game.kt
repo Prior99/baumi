@@ -1,9 +1,9 @@
 package de.cronosx.baumi.view
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.ashley.core.PooledEngine
+import com.badlogic.gdx.*
 import com.badlogic.gdx.math.*
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import ktx.app.KtxScreen
@@ -11,16 +11,22 @@ import ktx.scene2d.*
 import ktx.math.*
 import ktx.actors.*
 import de.cronosx.baumi.system.*
-import de.cronosx.baumi.system.renderer.*
 import de.cronosx.baumi.system.tick.Ticker
 import de.cronosx.baumi.data.*
 import com.badlogic.gdx.input.GestureDetector.*
 import com.badlogic.gdx.input.*
-import com.badlogic.gdx.InputAdapter
-import com.badlogic.gdx.InputMultiplexer
+import com.badlogic.gdx.Input.Keys
+import com.github.salomonbrys.kotson.*
+import com.google.gson.JsonObject
+import de.cronosx.baumi.appWidth
+import de.cronosx.baumi.component.*
+import de.cronosx.baumi.data.Version
 import de.cronosx.baumi.system.Renderer
+import ktx.ashley.entity
+import ktx.log.info
+import de.cronosx.baumi.Application
 
-class Game (val stage: Stage, val batch: Batch) : KtxScreen {
+class Game (val stage: Stage, val batch: Batch, val application: Application) : KtxScreen {
     val engine = PooledEngine()
     // Input.
     val gestureListener = GameGestureListener()
@@ -58,6 +64,14 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
 
         override fun touchDragged(x: Int, y: Int, pointer: Int): Boolean {
             dragging.touchDragged(projectCoords(x, y))
+            return false
+        }
+
+        override fun keyDown(keycode: Int): Boolean {
+            if (keycode == Keys.BACK || keycode == Keys.ESCAPE) {
+                serializationSystem.save()
+                application.setScreen<TreesMenu>()
+            }
             return false
         }
     }
@@ -122,5 +136,109 @@ class Game (val stage: Stage, val batch: Batch) : KtxScreen {
 
     override fun hide() {
         view.remove()
+    }
+
+    fun newGame() {
+        // Create the root tree branch.
+        engine.entity {
+            with<Position> {
+                position = vec2(appWidth/ 2f, 360f)
+            }
+            with<Branch> {
+                rotation = defaultDna.rotation.initial
+                length = defaultDna.length.initial
+                maxLength = defaultDna.length.max
+            }
+            with<Parent> {
+                children = ArrayList()
+            }
+            with<Child> {
+                generation = 0
+                parent = null
+                positionAlongParent = 0f
+            }
+            with<Genetic> {
+                dna = defaultDna
+            }
+            with<Health> {
+                max = defaultDna.health.max
+                current = defaultDna.health.max
+            }
+            with<Consumer> {
+                maxEnergy = defaultDna.energy.max
+                minEnergy = maxEnergy / 2f
+                energy = minEnergy
+                rate = defaultDna.energy.upkeep
+            }
+            with<Root> {}
+            with<Uuid> {}
+        }
+        // Ground water.
+        engine.entity {
+            with<Producer> {
+                rate = 0f
+            }
+            with<Buffer> {
+                max = config.maxWater
+                current = config.initialWater
+                energyYield = config.waterEnergyYield
+            }
+            with<GroundWater> {}
+            with<Uuid> {}
+        }
+        // Cart.
+        engine.entity {
+            with<Position> {
+                position = vec2(20f, 360f)
+            }
+            with<Draggable> {
+                size = vec2(300f, 120f)
+            }
+            with<Cart> {
+                content = 0
+                angle = 0f
+            }
+        }
+    }
+
+    fun load(obj: JsonObject): Boolean {
+        val saveGameVersion = obj["version"].nullString?.let { Version(it) } ?: Version(0, 0, 0)
+        info { "Savegame version: ${saveGameVersion}" }
+        info { "Software version: ${config.version}" }
+        if (!saveGameVersion.isCompatible(config.version)) {
+            error { "Migrating of savegames not yet implemented. Starting new game." }
+            newGame()
+            return false
+        }
+        world = World(obj["world"].obj)
+        info { "Loaded game \"${world.id}\" with name \"${world.name}\"." }
+        info { "Game is at tick ${world.tick}" }
+        // Uuids have to be deserialized first.
+        for (entityObj in obj["entities"].array) {
+            val entity = engine.entity {
+                with<Uuid> {
+                    id = entityObj["id"].string
+                }
+            }
+        }
+        for (entityObj in obj["entities"].array) {
+            val id = entityObj["id"].string
+            val entity = engine.entities.find { uuids.get(it).id == id }
+            if (entity == null) {
+                error { "Unable to find entity with id \"$id\" which was just created." }
+                continue
+            }
+            entityObj["components"].array
+                    .map { deserializeComponent(it.obj, engine) }
+                    .filter {
+                        if (it == null) {
+                            error { "Encountered undeserializable component." }
+                        }
+                        it != null
+                    }
+                    .forEach { entity?.add(it) }
+        }
+        info { "Loaded ${engine.entities.count()} entities." }
+        return true
     }
 }

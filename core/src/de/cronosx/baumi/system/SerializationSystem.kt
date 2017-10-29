@@ -6,6 +6,10 @@ import de.cronosx.baumi.component.*
 import com.badlogic.ashley.systems.IntervalSystem
 import com.badlogic.ashley.core.Engine
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.PixmapIO
+import com.badlogic.gdx.utils.BufferUtils
+import com.badlogic.gdx.utils.ScreenUtils
 import de.cronosx.baumi.data.*
 import de.cronosx.baumi.appWidth
 import de.cronosx.baumi.events.Drag
@@ -15,118 +19,6 @@ import ktx.log.*
 
 class SerializationSystem() : IntervalSystem(config.serializationInterval) {
     val uuids = mapperFor<Uuid>()
-
-    fun newGame(engine: Engine) {
-        // Create the root tree branch.
-        engine.entity {
-            with<Position> {
-                position = vec2(appWidth/ 2f, 360f)
-            }
-            with<Branch> {
-                rotation = defaultDna.rotation.initial
-                length = defaultDna.length.initial
-                maxLength = defaultDna.length.max
-            }
-            with<Parent> {
-                children = ArrayList()
-            }
-            with<Child> {
-                generation = 0
-                parent = null
-                positionAlongParent = 0f
-            }
-            with<Genetic> {
-                dna = defaultDna
-            }
-            with<Health> {
-                max = defaultDna.health.max
-                current = defaultDna.health.max
-            }
-            with<Consumer> {
-                maxEnergy = defaultDna.energy.max
-                minEnergy = maxEnergy / 2f
-                energy = minEnergy
-                rate = defaultDna.energy.upkeep
-            }
-            with<Root> {}
-            with<Uuid> {}
-        }
-        // Ground water.
-        engine.entity {
-            with<Producer> {
-                rate = 0f
-            }
-            with<Buffer> {
-                max = config.maxWater
-                current = config.initialWater
-                energyYield = config.waterEnergyYield
-            }
-            with<GroundWater> {}
-            with<Uuid> {}
-        }
-        // Cart.
-        engine.entity {
-            with<Position> {
-                position = vec2(20f, 360f)
-            }
-            with<Draggable> {
-                size = vec2(300f, 120f)
-            }
-            with<Cart> {
-                content = 0
-                angle = 0f
-            }
-        }
-    }
-
-    override fun addedToEngine(engine: Engine) {
-        val files = Gdx.files.local("trees/").list()
-        if (files.count() == 0) {
-            info { "No old game found. Starting new game." }
-            newGame(engine)
-            return
-        }
-        val parser = JsonParser()
-        val obj = parser.parse(files[0].readString())
-        val saveGameVersion = obj["version"].nullString?.let { Version(it) } ?: Version(0, 0, 0)
-        info { "Savegame version: ${saveGameVersion}" }
-        info { "Software version: ${config.version}" }
-        if (!saveGameVersion.isCompatible(config.version)) {
-            error { "Migrating of savegames not yet implemented. Starting new game." }
-            files[0].delete()
-            newGame(engine)
-            return
-        }
-        world = World(obj["world"].obj)
-        info { "Loaded game \"${world.id}\" with name \"${world.name}\"." }
-        info { "Game is at tick ${world.tick}" }
-        // Uuids have to be deserialized first.
-        for (entityObj in obj["entities"].array) {
-            val entity = engine.entity {
-                with<Uuid> {
-                    id = entityObj["id"].string
-                }
-            }
-        }
-        for (entityObj in obj["entities"].array) {
-            val id = entityObj["id"].string
-            val entity = engine.entities.find { uuids.get(it).id == id }
-            if (entity == null) {
-                error { "Unable to find entity with id \"$id\" which was just created." }
-                continue
-            }
-            entityObj["components"].array
-                .map { deserializeComponent(it.obj, engine) }
-                .filter {
-                    if (it == null) {
-                        error { "Encountered undeserializable component." }
-                    }
-                    it != null
-                }
-                .forEach { entity?.add(it) }
-        }
-        info { "Loaded ${engine.entities.count()} entities." }
-    }
 
     fun save() {
         for (entity in engine.entities) {
@@ -158,11 +50,21 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
             "version" to config.version.toString(),
             "timestamp" to System.currentTimeMillis()
         )
+        // Create directory.
+        val directory = "trees/${world.id}"
+        Gdx.files.local(directory).mkdirs()
+        // Write json.
         val json = obj.toString()
-        val path = "trees/${world.id}"
+        val path = "${directory}/game.json"
         val file = Gdx.files.local(path)
         file.writeString(json, false)
         info { "Wrote ${json.length} characters to $path." }
+        // Create screenshot.
+        val pixels = ScreenUtils.getFrameBufferPixels(0, 0, Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, true)
+        val pixmap = Pixmap(Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, Pixmap.Format.RGBA8888)
+        BufferUtils.copy(pixels, 0, pixmap.pixels, pixels.size)
+        PixmapIO.writePNG(Gdx.files.local("${directory}/screenshot.png"), pixmap)
+        pixmap.dispose()
     }
 
     override fun updateInterval() {

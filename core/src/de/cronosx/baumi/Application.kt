@@ -1,6 +1,5 @@
 package de.cronosx.baumi
 
-import com.badlogic.gdx.Application.*
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g2d.Batch
@@ -14,6 +13,7 @@ import ktx.async.enableKtxCoroutines
 import de.cronosx.baumi.view.Game
 import de.cronosx.baumi.data.*
 import de.cronosx.baumi.view.MainMenu
+import de.cronosx.baumi.view.TreesMenu
 import ktx.scene2d.Scene2DSkin
 
 val appWidth = 1080f
@@ -33,11 +33,13 @@ class Application : KtxGame<Screen>() {
             bindSingleton(createSkin())
             Scene2DSkin.defaultSkin = inject()
             bindSingleton(this@Application)
-            bindSingleton(Game(inject(), inject()))
+            bindSingleton(Game(inject(), inject(), inject()))
             bindSingleton(MainMenu(inject(), inject(), inject()))
+            bindSingleton(TreesMenu(inject(), inject(), inject()))
         }
         addScreen(context.inject<Game>())
         addScreen(context.inject<MainMenu>())
+        addScreen(context.inject<TreesMenu>())
         setScreen<MainMenu>()
     }
 

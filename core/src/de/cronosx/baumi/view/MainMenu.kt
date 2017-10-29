@@ -25,11 +25,12 @@ class MainMenu(val stage: Stage, val batch: Batch, val application: Application)
         setFillParent(true)
         background = whiteBackground
         button {
-            label("Game")
-            onClick {
-                application.setScreen<Game>()
-            }
-        }
+            label("Trees")
+            onClick { application.setScreen<TreesMenu>() }
+        }.cell(row = true)
+        button {
+            label("Shop")
+        }.cell(row = true)
     }
 
     override fun show() {
