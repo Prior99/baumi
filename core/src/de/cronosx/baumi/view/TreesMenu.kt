@@ -31,77 +31,7 @@ class TreesMenu(val stage: Stage, val batch: Batch, val application: Application
             .appendMinutes().appendSuffix(" minute", " minutes").appendSeparator(", ")
             .appendSeconds().appendSuffix(" second", " seconds")
             .toFormatter()
-    val view = table {
-        setFillParent(true)
-        background = whiteBackground
-        table {
-            scrollPane {
-                table {
-                    Gdx.files.local("trees/").list().map{ file ->
-                        val obj = parser.parse(file.child("game.json").readString()).obj
-                        val screenshot = TextureRegionDrawable(TextureRegion(Texture(file.child("screenshot.png"))))
-                        val age = formatter.print(Period((obj["world"].obj["tick"].int / config.tickSpeed).toLong() * 1000))
-                        table {
-                            touchable = Touchable.enabled
-                            align(Align.topLeft)
-                            table {
-                                background = screenshot
-                                left()
-                                cell(width = 216f, height = 384f)
-                            }
-                            table {
-                                align(Align.topLeft)
-                                left()
-                                top()
-                                cell(padLeft = 20f, fillX = true, fillY = true)
-                                table {
-                                    cell(fillX = true)
-                                    left()
-                                    label("A tree")
-                                }
-                                row()
-                                table {
-                                    cell(padTop = 40f)
-                                    label(age, "small").cell(padRight = 20f)
-                                }
-                            }
-                            onClick {
-                                application.setScreen<Game>()
-                                val game = application.context.inject<Game>()
-                                if (!game.load(obj)) {
-                                    file.delete()
-                                }
-                            }
-                            cell(row = true, width = 1080f, height = 384f, padBottom = 40f)
-                        }
-                    }
-                    row()
-                    table {
-                        cell(padTop = 40f, width = 1080f, row = true, fillX = true)
-                        table {
-                            cell(expandX = true)
-                            button {
-                                label("Back")
-                                onClick { application.setScreen<MainMenu>() }
-                            }
-                        }
-                        table {
-                            cell(expandX = true)
-                            button {
-                                label("New Tree")
-                                onClick {
-                                    application.setScreen<Game>()
-                                    val game = application.context.inject<Game>()
-                                    game.newGame()
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    var view: KTableWidget? = null
 
     inner class GameInputAdapter : InputAdapter() {
         override fun keyDown(keycode: Int): Boolean {
@@ -114,7 +44,82 @@ class TreesMenu(val stage: Stage, val batch: Batch, val application: Application
 
     val input = GameInputAdapter()
 
+    fun createView(): KTableWidget {
+        return table {
+            setFillParent(true)
+            background = whiteBackground
+            table {
+                scrollPane {
+                    table {
+                        Gdx.files.local("trees/").list().map{ file ->
+                            val obj = parser.parse(file.child("game.json").readString()).obj
+                            val screenshot = TextureRegionDrawable(TextureRegion(Texture(file.child("screenshot.png"))))
+                            val age = formatter.print(Period((obj["world"].obj["tick"].int / config.tickSpeed).toLong() * 1000))
+                            table {
+                                touchable = Touchable.enabled
+                                align(Align.topLeft)
+                                table {
+                                    background = screenshot
+                                    left()
+                                    cell(width = 216f, height = 384f)
+                                }
+                                table {
+                                    align(Align.topLeft)
+                                    left()
+                                    top()
+                                    cell(padLeft = 20f, fillX = true, fillY = true)
+                                    table {
+                                        cell(fillX = true)
+                                        left()
+                                        label("A tree")
+                                    }
+                                    row()
+                                    table {
+                                        cell(padTop = 40f)
+                                        label(age, "small").cell(padRight = 20f)
+                                    }
+                                }
+                                onClick {
+                                    application.setScreen<Game>()
+                                    val game = application.context.inject<Game>()
+                                    if (!game.load(obj)) {
+                                        file.delete()
+                                    }
+                                }
+                                cell(row = true, width = 1080f, height = 384f, padBottom = 40f)
+                            }
+                        }
+                        row()
+                        table {
+                            cell(padTop = 40f, width = 1080f, row = true, fillX = true)
+                            table {
+                                cell(expandX = true)
+                                button {
+                                    label("Back")
+                                    onClick { application.setScreen<MainMenu>() }
+                                }
+                            }
+                            table {
+                                cell(expandX = true)
+                                button {
+                                    label("New Tree")
+                                    onClick {
+                                        application.setScreen<Game>()
+                                        val game = application.context.inject<Game>()
+                                        game.newGame()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override fun show() {
+        view?.remove()
+        view = createView()
         stage.addActor(view)
         val multiplexer = InputMultiplexer()
         multiplexer.addProcessor(stage)
@@ -129,7 +134,7 @@ class TreesMenu(val stage: Stage, val batch: Batch, val application: Application
     }
 
     override fun hide() {
-        view.remove()
+        view?.remove()
     }
 }
 
