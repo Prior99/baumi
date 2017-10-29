@@ -26,8 +26,8 @@ class MainMenu(val stage: Stage, val batch: Batch, val application: Application)
         background = whiteBackground
         button {
             label("Trees")
-            onClick { application.setScreen<TreesMenu>() }
-        }.cell(row = true)
+            onClick {application.setScreen<TreesMenu>() }
+        }.cell(row = true, padBottom = 40f)
         button {
             label("Shop")
         }.cell(row = true)

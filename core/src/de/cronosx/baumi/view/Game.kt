@@ -16,6 +16,8 @@ import de.cronosx.baumi.data.*
 import com.badlogic.gdx.input.GestureDetector.*
 import com.badlogic.gdx.input.*
 import com.badlogic.gdx.Input.Keys
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.GL20
 import com.github.salomonbrys.kotson.*
 import com.google.gson.JsonObject
 import de.cronosx.baumi.appWidth
@@ -126,13 +128,15 @@ class Game (val stage: Stage, val batch: Batch, val application: Application) : 
                 's' -> debug.extremeSpeed = !debug.extremeSpeed
             }
         }
+        // Reset as the scroll pane in the `TreeMenu` screws with the alpha channel.
+        batch.color = Color.WHITE
     }
 
     override fun render(delta: Float) {
         stage.act(delta)
         shapeRenderer.setProjectionMatrix(stage.camera.combined)
-        engine.update(delta)
         stage.draw()
+        engine.update(delta)
     }
 
     override fun hide() {
