@@ -27,7 +27,7 @@ import ktx.log.info
 import de.cronosx.baumi.Application
 
 class Game (val stage: Stage, val batch: Batch, val application: Application) : KtxScreen {
-    val engine = PooledEngine()
+    var engine = PooledEngine()
     // Input.
     val gestureListener = GameGestureListener()
     val input = GameInputAdapter()
@@ -99,6 +99,7 @@ class Game (val stage: Stage, val batch: Batch, val application: Application) : 
     }
 
     override fun show() {
+        engine = PooledEngine()
         engine.addSystem(ticker)
         engine.addSystem(gravity)
         engine.addSystem(wind)
