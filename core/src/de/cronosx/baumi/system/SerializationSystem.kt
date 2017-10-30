@@ -1,20 +1,15 @@
 package de.cronosx.baumi.system
 
 import com.github.salomonbrys.kotson.*
-import com.google.gson.JsonParser
 import de.cronosx.baumi.component.*
 import com.badlogic.ashley.systems.IntervalSystem
-import com.badlogic.ashley.core.Engine
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.PixmapIO
 import com.badlogic.gdx.utils.BufferUtils
 import com.badlogic.gdx.utils.ScreenUtils
 import de.cronosx.baumi.data.*
-import de.cronosx.baumi.appWidth
-import de.cronosx.baumi.events.Drag
 import ktx.ashley.*
-import ktx.math.*
 import ktx.log.*
 
 class SerializationSystem() : IntervalSystem(config.serializationInterval) {
@@ -65,6 +60,7 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
         BufferUtils.copy(pixels, 0, pixmap.pixels, pixels.size)
         PixmapIO.writePNG(Gdx.files.local("${directory}/screenshot.png"), pixmap)
         pixmap.dispose()
+        info { "Screenshot saved." }
     }
 
     override fun updateInterval() {

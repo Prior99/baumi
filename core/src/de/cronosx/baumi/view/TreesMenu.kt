@@ -53,7 +53,12 @@ class TreesMenu(val stage: Stage, val batch: Batch, val application: Application
                     table {
                         Gdx.files.local("trees/").list().map{ file ->
                             val obj = parser.parse(file.child("game.json").readString()).obj
-                            val screenshot = TextureRegionDrawable(TextureRegion(Texture(file.child("screenshot.png"))))
+                            val screenshotFile = file.child("screenshot.png")
+                            val screenshot = try {
+                                TextureRegionDrawable(TextureRegion(Texture(screenshotFile)))
+                            } catch(err: Exception) {
+                                TextureRegionDrawable(TextureRegion(Texture("background.png")))
+                            }
                             val age = formatter.print(Period((obj["world"].obj["tick"].int / config.tickSpeed).toLong() * 1000))
                             table {
                                 touchable = Touchable.enabled
