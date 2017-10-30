@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.BufferUtils
 import com.badlogic.gdx.utils.ScreenUtils
 import de.cronosx.baumi.data.*
 import ktx.ashley.*
+import ktx.async.ktxAsync
 import ktx.log.*
 
 class SerializationSystem() : IntervalSystem(config.serializationInterval) {
@@ -55,12 +56,16 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
         file.writeString(json, false)
         info { "Wrote ${json.length} characters to $path." }
         // Create screenshot.
-        val pixels = ScreenUtils.getFrameBufferPixels(0, 0, Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, true)
-        val pixmap = Pixmap(Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, Pixmap.Format.RGBA8888)
-        BufferUtils.copy(pixels, 0, pixmap.pixels, pixels.size)
-        PixmapIO.writePNG(Gdx.files.local("${directory}/screenshot.png"), pixmap)
-        pixmap.dispose()
-        info { "Screenshot saved." }
+        ktxAsync {
+            asynchronous {
+                val pixels = ScreenUtils.getFrameBufferPixels(0, 0, Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, true)
+                val pixmap = Pixmap(Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, Pixmap.Format.RGBA8888)
+                BufferUtils.copy(pixels, 0, pixmap.pixels, pixels.size)
+                PixmapIO.writePNG(Gdx.files.local("${directory}/screenshot.png"), pixmap)
+                pixmap.dispose()
+                info { "Screenshot saved." }
+            }
+        }
     }
 
     override fun updateInterval() {

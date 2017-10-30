@@ -133,6 +133,7 @@ project(":core") {
         compile "io.github.libktx:ktx-ashley:$ktxVersion"
         compile "com.github.salomonbrys.kotson:kotson:$kotsonVersion"
         compile "joda-time:joda-time:$jodaVersion"
+        compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.1"
         testCompile "org.jetbrains.spek:spek-api:$spekVersion"
         testCompile "com.winterbe:expekt:$expektVersion"
         testCompile "org.junit.platform:junit-platform-runner:$junitVersion"
