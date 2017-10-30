@@ -15,6 +15,7 @@ test:
 android:
   image: "cangol/android-gradle"
   before_script:
+    - apt-get update && apt-get -yy install make
     - echo y | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-23"
   script:
     - make build-android
