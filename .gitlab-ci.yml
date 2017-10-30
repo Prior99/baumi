@@ -10,6 +10,7 @@ test:
   script:
     - make test
   stage: test
+  allow_failure: true
 
 android:
   image: "cangol/android-gradle"
