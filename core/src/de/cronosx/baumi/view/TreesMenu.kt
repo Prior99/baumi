@@ -83,13 +83,31 @@ class TreesMenu(val stage: Stage, val batch: Batch, val application: Application
                                         cell(padTop = 40f)
                                         label(age, "small").cell(padRight = 20f)
                                     }
-                                }
-                                onClick {
-                                    application.setScreen<Game>()
-                                    val game = application.context.inject<Game>()
-                                    if (!game.load(obj)) {
-                                        file.delete()
+                                    row()
+                                    table {
+                                        cell(fillX = true)
+                                        left()
+                                        button {
+                                            label("Play")
+                                            onClick {
+                                                application.setScreen<Game>()
+                                                val game = application.context.inject<Game>()
+                                                if (!game.load(obj)) {
+                                                    file.deleteDirectory()
+                                                }
+                                            }
+                                        }
+                                        button {
+                                            cell(padLeft = 40f)
+                                            label("Delete")
+                                            onClick {
+                                                file.deleteDirectory()
+                                                hide()
+                                                show()
+                                            }
+                                        }
                                     }
+                                    row()
                                 }
                                 cell(row = true, width = 1080f, height = 384f, padBottom = 40f)
                             }
