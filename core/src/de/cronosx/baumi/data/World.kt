@@ -13,7 +13,8 @@ class World (
 ) {
     constructor(obj: JsonObject) : this(
         obj["tick"].int,
-        obj["lastTick"].double,
+        // obj["lastTick"].double,
+        0.0, // TODO CHANGE THIS BACK.
         obj["windDirection"].float,
         obj["id"].string,
         obj["name"].string

@@ -144,17 +144,17 @@ val defaultDna = DNA(
         leafCountFalloff = 0.2f,
         maxRotationOffset = 0.2f,
         upkeep = 0.1f,
-        leafCost = 2f,
+        leafCost = 5f,
         maxEnergy = 0.1f,
         maxHealth = 0.3f,
-        maxYoungLeafs = 3
+        maxYoungLeafs = 2
     ),
     length = GeneLength(
         growthSpeed = 0.1f,
         max = 400f,
         initial = 100f,
         falloff = 0.6f,
-        growCost = 3f
+        growCost = 12f
     ),
     health = GeneHealth(
         max= 10f,
@@ -180,9 +180,9 @@ val defaultDna = DNA(
         minGeneration = 1,
         upkeep = 0.08f,
         maxEnergy = 1f,
-        fruitCost = 2.5f,
-        growingDuration = 300,
-        bloomingDuration = 1000,
-        fruitDuration = 200
+        fruitCost = 10f,
+        growingDuration = 3000,
+        bloomingDuration = 4000,
+        fruitDuration = 1000
     )
 )
