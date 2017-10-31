@@ -16,7 +16,7 @@ import ktx.log.*
 class SerializationSystem() : IntervalSystem(config.serializationInterval) {
     val uuids = mapperFor<Uuid>()
 
-    fun save() {
+    fun save(saveSynchroneous: Boolean = false) {
         for (entity in engine.entities) {
             if (!uuids.has(entity)) {
                 entity.add(Uuid())
@@ -56,14 +56,21 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
         file.writeString(json, false)
         info { "Wrote ${json.length} characters to $path." }
         // Create screenshot.
-        ktxAsync {
-            asynchronous {
-                val pixels = ScreenUtils.getFrameBufferPixels(0, 0, Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, true)
-                val pixmap = Pixmap(Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, Pixmap.Format.RGBA8888)
-                BufferUtils.copy(pixels, 0, pixmap.pixels, pixels.size)
-                PixmapIO.writePNG(Gdx.files.local("${directory}/screenshot.png"), pixmap)
-                pixmap.dispose()
-                info { "Screenshot saved." }
+        val pixels = ScreenUtils.getFrameBufferPixels(0, 0, Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, true)
+        fun saveScreenshot() {
+            val pixmap = Pixmap(Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, Pixmap.Format.RGBA8888)
+            BufferUtils.copy(pixels, 0, pixmap.pixels, pixels.size)
+            PixmapIO.writePNG(Gdx.files.local("${directory}/screenshot.png"), pixmap)
+            pixmap.dispose()
+            info { "Screenshot saved." }
+        }
+        if (saveSynchroneous) {
+            saveScreenshot()
+        } else {
+            ktxAsync {
+                asynchronous {
+                    saveScreenshot()
+                }
             }
         }
     }

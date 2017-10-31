@@ -103,7 +103,7 @@ class Fertilizer() : EntitySystem() {
                                 weight = 1000f
                             }
                             with<Draggable> {
-                                size = vec2(56f, 18f)
+                                size = vec2(195f, 51f)
                             }
                         }
                     }
