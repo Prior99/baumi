@@ -10,17 +10,18 @@ class Shop (
         var lastTick: Double,
         var prices: MutableList<Int>,
         var velocities: MutableList<Int>,
+        var wallet: Int,
         var debugCalendar: Calendar? = null
 ) {
-    constructor() : this(0, 0.0, mutableListOf(), mutableListOf()) {
+    constructor() : this(0, 0.0, mutableListOf<Int>(), mutableListOf<Int>(), 0) {
         val file = Gdx.files.local("shop.json")
         if (!file.exists()) {
             val calendar = Calendar.getInstance()
-            calendar.set(2017, 1, 1, 0, 0, 0)
             tick = 0
             lastTick = calendar.timeInMillis / 1000.0
             prices = mutableListOf(1000)
             velocities = mutableListOf(0)
+            wallet = 0
         }
         val parser = JsonParser()
         val obj = parser.parse(file.readString())
@@ -28,6 +29,7 @@ class Shop (
         lastTick = obj["lastTick"].double
         prices = obj["prices"].array.map{ it.int }.toMutableList()
         velocities = obj["velocities"].array.map{ it.int }.toMutableList()
+        wallet = obj["wallet"].int
     }
 
     val currentVelocity: Int
@@ -41,7 +43,8 @@ class Shop (
                 "tick" to tick,
                 "lastTick" to lastTick,
                 "prices" to jsonArray(prices),
-                "velocities" to jsonArray(velocities)
+                "velocities" to jsonArray(velocities),
+                "wallet" to wallet
         )
     }
 
@@ -68,4 +71,3 @@ class Shop (
 }
 
 var shop = Shop()
-
