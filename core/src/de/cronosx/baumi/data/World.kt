@@ -17,7 +17,7 @@ class World (
         obj["windDirection"].float,
         obj["id"].string,
         obj["name"].string
-    ) {}
+    )
 
     fun toJson(): JsonObject {
         return jsonObject(

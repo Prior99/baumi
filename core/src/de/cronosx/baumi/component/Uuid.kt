@@ -9,7 +9,7 @@ class Uuid(
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
         obj["id"].string
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

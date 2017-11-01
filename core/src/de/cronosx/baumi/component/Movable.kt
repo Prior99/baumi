@@ -13,7 +13,7 @@ class Movable(
         obj["weight"].float,
         obj["floating"].bool,
         obj["fixed"].bool
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

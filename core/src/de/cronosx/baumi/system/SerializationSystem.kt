@@ -13,7 +13,7 @@ import ktx.ashley.*
 import ktx.async.ktxAsync
 import ktx.log.*
 
-class SerializationSystem() : IntervalSystem(config.serializationInterval) {
+class SerializationSystem : IntervalSystem(config.serializationInterval) {
     val uuids = mapperFor<Uuid>()
 
     fun save(saveSynchroneous: Boolean = false) {
@@ -24,7 +24,7 @@ class SerializationSystem() : IntervalSystem(config.serializationInterval) {
         }
         val entities = jsonArray(engine.entities.map { entity ->
             jsonObject(
-                "components" to jsonArray(entity.getComponents()
+                "components" to jsonArray(entity.components
                     .filter {
                         if (!(it is SerializableComponent)) {
                             error { "Component $it is not serializable." }

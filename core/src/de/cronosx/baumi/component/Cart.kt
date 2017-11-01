@@ -10,7 +10,7 @@ class Cart(
     constructor(obj: JsonObject) : this(
             obj["content"].int,
             obj["angle"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

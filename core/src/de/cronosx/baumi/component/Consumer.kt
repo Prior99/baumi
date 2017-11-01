@@ -20,7 +20,7 @@ class Consumer(
         obj["rate"].float,
         obj["effectiveness"].float,
         obj["healthDecayRate"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

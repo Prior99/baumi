@@ -12,7 +12,7 @@ class Buffer(
         obj["max"].float,
         obj["current"].float,
         obj["energyYield"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

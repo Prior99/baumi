@@ -8,7 +8,7 @@ class Producer(
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
         obj["rate"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

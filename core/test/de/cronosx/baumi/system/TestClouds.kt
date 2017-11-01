@@ -1,6 +1,6 @@
 package de.cronosx.baumi.system
 
-import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.badlogic.gdx.backends.headless.HeadlessApplication
 import com.badlogic.ashley.core.PooledEngine
 import com.badlogic.gdx.Gdx
 import com.winterbe.expekt.expect
@@ -20,7 +20,7 @@ class TestClouds : Spek({
     val clouds = mapperFor<Cloud>()
 
     beforeEachTest {
-        HeadlessApplication(EmptyApplication());
+        HeadlessApplication(EmptyApplication())
         engine = PooledEngine()
     }
 

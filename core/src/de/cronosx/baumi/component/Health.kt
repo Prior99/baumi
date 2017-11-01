@@ -12,7 +12,7 @@ class Health(
     constructor(obj: JsonObject) : this(
         obj["max"].float,
         obj["current"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

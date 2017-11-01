@@ -8,7 +8,7 @@ import ktx.ashley.*
 import ktx.math.*
 import ktx.log.*
 
-class Gravity() : IteratingSystem(
+class Gravity : IteratingSystem(
         allOf(Movable::class, Position::class).get()) {
     val movables = mapperFor<Movable>()
     val positions = mapperFor<Position>()

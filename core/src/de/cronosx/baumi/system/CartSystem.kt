@@ -12,7 +12,7 @@ import de.cronosx.baumi.events.DragStop
 import ktx.ashley.allOf
 import ktx.ashley.mapperFor
 
-class CartSystem() : IteratingSystem(allOf(Position::class, Cart::class).get()) {
+class CartSystem : IteratingSystem(allOf(Position::class, Cart::class).get()) {
     val positions = mapperFor<Position>()
     val carts = mapperFor<Cart>()
     var dragging = false

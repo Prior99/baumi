@@ -10,7 +10,7 @@ class FertilizerGrain(
     constructor(obj: JsonObject) : this(
             obj["index"].int,
             obj["rotation"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

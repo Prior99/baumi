@@ -13,7 +13,7 @@ class Fruit(
     constructor(obj: JsonObject) : this(
         obj["rotation"].float,
         obj["age"].int
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

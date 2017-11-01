@@ -7,7 +7,7 @@ import ktx.ashley.*
 class Age(
     var age: Int = 0
 ) : SerializableComponent() {
-    constructor(obj: JsonObject) : this(obj["age"].int) {}
+    constructor(obj: JsonObject) : this(obj["age"].int)
 
     override fun toJson(): JsonObject {
         return jsonObject(

@@ -13,7 +13,7 @@ class Decompose(
         obj["current"].float,
         obj["max"].float,
         obj["speed"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

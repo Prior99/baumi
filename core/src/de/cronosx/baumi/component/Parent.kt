@@ -12,7 +12,7 @@ class Parent(
             obj["children"].array.map { child ->
                 engine.entities.find { uuids.get(it).id == child.string } as Entity
             }.toMutableList()
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

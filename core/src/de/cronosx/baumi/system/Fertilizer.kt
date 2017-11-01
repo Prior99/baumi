@@ -17,7 +17,7 @@ import ktx.ashley.mapperFor
 import ktx.log.debug
 import ktx.math.vec2
 
-class Fertilizer() : EntitySystem() {
+class Fertilizer : EntitySystem() {
     val fertilizerBags = mapperFor<FertilizerBag>()
     val positions = mapperFor<Position>()
     val fertilizerGrains = mapperFor<FertilizerGrain>()

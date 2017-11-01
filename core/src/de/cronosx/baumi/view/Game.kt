@@ -134,7 +134,7 @@ class Game (val stage: Stage, val batch: Batch, val application: Application) : 
 
     override fun render(delta: Float) {
         stage.act(delta)
-        shapeRenderer.setProjectionMatrix(stage.camera.combined)
+        shapeRenderer.projectionMatrix = stage.camera.combined
         stage.draw()
         engine.update(delta)
     }
@@ -242,7 +242,7 @@ class Game (val stage: Stage, val batch: Batch, val application: Application) : 
                         }
                         it != null
                     }
-                    .forEach { entity?.add(it) }
+                    .forEach { entity.add(it) }
         }
         info { "Loaded ${engine.entities.count()} entities." }
         return true

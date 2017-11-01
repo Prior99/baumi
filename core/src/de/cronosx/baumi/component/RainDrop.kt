@@ -8,7 +8,7 @@ class RainDrop(
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
             obj["index"].int
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

@@ -13,7 +13,7 @@ import de.cronosx.baumi.events.DragStop
 import ktx.ashley.*
 import ktx.math.*
 
-class Rain() : EntitySystem() {
+class Rain : EntitySystem() {
     val clouds = mapperFor<Cloud>()
     val positions = mapperFor<Position>()
     val rainDrops = mapperFor<RainDrop>()
@@ -28,7 +28,7 @@ class Rain() : EntitySystem() {
 
     init {
         on { event: DragStart ->
-            val entity = event.entity;
+            val entity = event.entity
             if (!clouds.has(entity) || !movables.has(entity)) {
                 return@on
             }
@@ -38,7 +38,7 @@ class Rain() : EntitySystem() {
         }
 
         on { event: DragStop ->
-            val entity = event.entity;
+            val entity = event.entity
             if (!clouds.has(entity) || !movables.has(entity)) {
                 return@on
             }
@@ -48,7 +48,7 @@ class Rain() : EntitySystem() {
         }
 
         on { event: Drag ->
-            val entity = event.entity;
+            val entity = event.entity
             if (entity != current) {
                 return@on
             }
@@ -72,7 +72,7 @@ class Rain() : EntitySystem() {
         // Decrease the time contingent by the spent time.
         timeContingent -= dropsPerTime / config.dropsPerSecond
         // Increase the amount of drops to spawn according to the amount of pixels moved.
-        val movedModifier = if (cloudPosition.y == config.cloudHeight) 0f else delta * movementDelta!!.len() * 20f
+        val movedModifier = if (cloudPosition.y == config.cloudHeight) 0f else delta * movementDelta.len() * 20f
         val dropsToSpawn = dropsPerTime * movedModifier
         // Spawn drops.
         for(i in 0 until dropsToSpawn.toInt()) {

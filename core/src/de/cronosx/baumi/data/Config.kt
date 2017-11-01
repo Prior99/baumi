@@ -8,13 +8,14 @@ class Version(
     constructor(version: String) : this(
             version.split(".").getOrElse(0, { "0" }).toInt(),
             version.split(".").getOrElse(1, { "0" }).toInt(),
-            version.split(".").getOrElse(2, { "0" }).toInt()) {}
+            version.split(".").getOrElse(2, { "0" }).toInt())
+
     override fun toString(): String {
         return "$major.$minor.$patch"
     }
 
     fun isCompatible(other: Version): Boolean {
-        return other.major == major;
+        return other.major == major
     }
 }
 

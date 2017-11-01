@@ -11,7 +11,7 @@ class Position(
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
         vec2(obj["position"].array[0].float, obj["position"].array[1].float)
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

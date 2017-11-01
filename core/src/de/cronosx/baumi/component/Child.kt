@@ -14,7 +14,7 @@ class Child(
             obj["generation"].int,
             obj["positionAlongParent"].float,
             engine.entities.find { uuids.get(it).id == obj["parent"].nullString }
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

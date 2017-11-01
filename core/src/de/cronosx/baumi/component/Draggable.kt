@@ -12,7 +12,7 @@ class Draggable(
     constructor(obj: JsonObject) : this(
             vec2(obj["offset"].array[0].float, obj["offset"].array[1].float),
             vec2(obj["size"].array[0].float, obj["size"].array[1].float)
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

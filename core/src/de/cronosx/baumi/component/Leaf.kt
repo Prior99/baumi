@@ -12,7 +12,7 @@ class Leaf(
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
         obj["rotation"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

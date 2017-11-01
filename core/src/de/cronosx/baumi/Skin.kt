@@ -24,7 +24,7 @@ fun buttonDownRegion(texture: Texture): Drawable {
     )
 }
 
-fun createSkin(): Skin = skin() { skin ->
+fun createSkin(): Skin = skin { skin ->
     // Font.
     val fontGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/amatic/AmaticSC-Regular.ttf"))
     val font16 = {

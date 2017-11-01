@@ -11,7 +11,7 @@ import ktx.ashley.*
 import ktx.math.*
 import ktx.log.*
 
-class Clouds() : EntitySystem() {
+class Clouds : EntitySystem() {
     val clouds = mapperFor<Cloud>()
     val positions = mapperFor<Position>()
 

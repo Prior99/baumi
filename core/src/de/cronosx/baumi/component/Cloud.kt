@@ -9,7 +9,7 @@ class Cloud(
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
         obj["content"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

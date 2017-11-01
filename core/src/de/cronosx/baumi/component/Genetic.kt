@@ -10,7 +10,7 @@ class Genetic(
 ) : SerializableComponent() {
     constructor(obj: JsonObject) : this(
         defaultDna
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(
