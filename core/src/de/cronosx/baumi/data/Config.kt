@@ -40,7 +40,8 @@ data class Config (
     val fertilizerYield: Float,
     val fertilizerCost: Int,
     val maxReplayTicks: Int,
-    val version: Version
+    val version: Version,
+    val shopTickInterval: Int
 )
 
 val config = Config(
@@ -64,5 +65,6 @@ val config = Config(
     fertilizerYield = 0.5f,
     fertilizerCost = 1,
     maxReplayTicks = 10000,
-    version = Version(3, 0, 0)
+    version = Version(3, 0, 0),
+    shopTickInterval = 3600
 )

@@ -19,9 +19,6 @@ class TestGrowth : Spek({
     val parents = mapperFor<Parent>()
     val consumers = mapperFor<Consumer>()
     val leafs = mapperFor<Leaf>()
-    val genetics = mapperFor<Genetic>()
-    val positions = mapperFor<Position>()
-    val healths = mapperFor<Health>()
 
     beforeEachTest {
         engine = PooledEngine()
