@@ -23,25 +23,16 @@ class TestLeaf : Spek({
                 with<Uuid> { id = "some-id" }
             }
             val component = Leaf(
-                    rotation = 3.5f,
-                    generation = 4,
-                    positionAlongBranch = 3f,
-                    parent = parentEntity
+                    rotation = 3.5f
             )
             val json = component.toJson()
             expect(json).equal(jsonObject(
                     "type" to "Leaf",
-                    "rotation" to 3.5f,
-                    "generation" to 4,
-                    "positionAlongBranch" to 3f,
-                    "parent" to "some-id"
+                    "rotation" to 3.5f
             ))
             val deserialized = deserializeComponent(json, engine!!) as Leaf
             expect(deserialized is Leaf).equal(true)
             expect(deserialized.rotation).equal(3.5f)
-            expect(deserialized.generation).equal(4)
-            expect(deserialized.positionAlongBranch).equal(3f)
-            expect(deserialized.parent).equal(parentEntity)
         }
     }
 })

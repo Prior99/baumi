@@ -31,21 +31,21 @@ class TestDeath : Spek({
                     current = 0f
                     max = 1f
                 }
-                with<Branch>{
+                with<Parent>{
                     children = mutableListOf(
                         engine.entity{
                             with<Health>{
                                 current = 1f
                                 max = 1f
                             }
-                            with<Branch>{
+                            with<Parent>{
                                 children = mutableListOf(
                                     engine.entity{
                                         with<Health>{
                                             current = 1f
                                             max = 1f
                                         }
-                                        with<Branch>{ }
+                                        with<Parent>{ }
                                     }
                                 )
                             }

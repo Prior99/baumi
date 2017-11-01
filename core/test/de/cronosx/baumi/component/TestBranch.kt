@@ -25,26 +25,20 @@ class TestBranch : Spek({
             val component = Branch(
                     rotation = 3.5f,
                     length = 8f,
-                    maxLength = 100f,
-                    generation = 3,
-                    children = mutableListOf(child)
+                    maxLength = 100f
             )
             val json = component.toJson()
             expect(json).equal(jsonObject(
                     "type" to "Branch",
                     "rotation" to 3.5f,
                     "length" to 8f,
-                    "maxLength" to 100f,
-                    "generation" to 3,
-                    "children" to jsonArray("some-id")
+                    "maxLength" to 100f
             ))
             val deserialized = deserializeComponent(json, engine!!) as Branch
             expect(deserialized is Branch).equal(true)
             expect(deserialized.rotation).equal(3.5f)
             expect(deserialized.length).equal(8f)
             expect(deserialized.maxLength).equal(100f)
-            expect(deserialized.generation).equal(3)
-            expect(deserialized.children).contain(child)
         }
     }
 })

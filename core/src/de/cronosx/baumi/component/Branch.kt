@@ -15,7 +15,7 @@ class Branch(
         obj["rotation"].float,
         obj["length"].float,
         obj["maxLength"].float
-    ) {}
+    )
 
     override fun toJson(): JsonObject {
         return jsonObject(

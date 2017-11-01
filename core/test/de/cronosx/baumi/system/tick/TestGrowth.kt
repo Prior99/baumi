@@ -16,6 +16,7 @@ class TestGrowth : Spek({
     var engine = PooledEngine()
 
     val branches = mapperFor<Branch>()
+    val parents = mapperFor<Parent>()
     val consumers = mapperFor<Consumer>()
     val leafs = mapperFor<Leaf>()
     val genetics = mapperFor<Genetic>()
@@ -41,6 +42,8 @@ class TestGrowth : Spek({
                     length = 0f
                     maxLength = 100f
                 }
+                with<Parent> {}
+                with<Child> {}
                 with<Genetic> {}
                 with<Health> {
                     max = 100f
@@ -62,16 +65,19 @@ class TestGrowth : Spek({
                 val ticks = (defaultDna.leafs.maxGenerationLeafCountPerLength * 100f).toInt()
                 // Grows leafs until max.
                 for (i in 1 .. ticks) {
-                    consumers.get(root).energy = 50f + defaultDna.leafs.leafCost
+                    consumers.get(root).energy = 100f + defaultDna.leafs.leafCost
                     growth!!.tick(i)
-                    expect(consumers.get(root).energy).equal(50f)
-                    expect(engine.entities.filter{ leafs.has(it) }.count()).equal(i)
+                    // Only one leaf can be growing at a time.
+                    if (i == 1) {
+                        expect(consumers.get(root).energy).equal(92f)
+                    }
+                    expect(engine.entities.filter { leafs.has(it) }.count()).equal(minOf(i, defaultDna.leafs.maxYoungLeafs))
                 }
                 // Doesn't grow more leafs than maximum allowed.
                 consumers.get(root).energy = 50f + defaultDna.leafs.leafCost
                 growth!!.tick(ticks + 1)
                 expect(consumers.get(root).energy).equal(50f + defaultDna.leafs.leafCost)
-                expect(engine.entities.filter{ leafs.has(it) }.count()).equal(ticks)
+                expect(engine.entities.filter{ leafs.has(it) }.count()).equal(defaultDna.leafs.maxYoungLeafs)
             }
 
             it("creates no leafs if no surplus is available") {
@@ -96,10 +102,11 @@ class TestGrowth : Spek({
             }
 
             it("creates branches if enough surplus is available and there are too many leafs already") {
-                val branch = branches.get(root)
+                val parentBranch = parents.get(root)
                 for (i in 1 .. 100) {
-                    branch.children.add(engine.entity{
-                        with<Leaf> {
+                    parentBranch.children.add(engine.entity{
+                        with<Leaf> {}
+                        with<Child> {
                             parent = root
                         }
                         with<Position> {}
@@ -114,10 +121,11 @@ class TestGrowth : Spek({
         }
         describe("growing of length") {
             it("increases the length if enough surplus is available and there are already enough leafs") {
-                val branch = branches.get(root)
+                val parentBranch = parents.get(root)
                 for (i in 1 .. 100) {
-                    branch.children.add(engine.entity{
-                        with<Leaf> {
+                    parentBranch.children.add(engine.entity{
+                        with<Leaf> {}
+                        with<Child> {
                             parent = root
                         }
                         with<Position> {}

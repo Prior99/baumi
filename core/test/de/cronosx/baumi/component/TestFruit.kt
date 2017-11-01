@@ -24,26 +24,17 @@ class TestFruit : Spek({
             }
             val component = Fruit(
                     rotation = 3.5f,
-                    generation = 4,
-                    positionAlongBranch = 3f,
-                    parent = parentEntity,
                     age = 2
             )
             val json = component.toJson()
             expect(json).equal(jsonObject(
                     "type" to "Fruit",
                     "rotation" to 3.5f,
-                    "generation" to 4,
-                    "positionAlongBranch" to 3f,
-                    "parent" to "some-id",
                     "age" to 2
             ))
             val deserialized = deserializeComponent(json, engine!!) as Fruit
             expect(deserialized is Fruit).equal(true)
             expect(deserialized.rotation).equal(3.5f)
-            expect(deserialized.generation).equal(4)
-            expect(deserialized.positionAlongBranch).equal(3f)
-            expect(deserialized.parent).equal(parentEntity)
             expect(deserialized.age).equal(2)
         }
     }

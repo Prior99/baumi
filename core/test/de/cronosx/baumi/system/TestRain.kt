@@ -6,6 +6,7 @@ import com.winterbe.expekt.expect
 import de.cronosx.baumi.Bus
 import de.cronosx.baumi.component.*
 import de.cronosx.baumi.data.config
+import de.cronosx.baumi.system.tick.Ticker
 import ktx.ashley.add
 import ktx.ashley.entity
 import ktx.ashley.mapperFor
@@ -35,7 +36,7 @@ class TestRain : Spek({
 
         beforeEachTest {
             rain = Rain()
-            dragging = Dragging()
+            dragging = Dragging(Ticker())
             engine.addSystem(rain)
             engine.addSystem(dragging)
             buffer = engine.entity {
@@ -115,18 +116,14 @@ class TestRain : Spek({
 
                     it("spawns entities with `RainDrop` when 0.1s has passed") {
                         engine.update(1f)
-                        // moved = 20
-                        // dropsPerTime = 5 * 1 = 5
-                        // movedModifiers = 1 * 20 * 20 = 400
-                        // dropsToSpawn = 5 * 400 = 2000
-                        expect(engine.entities.filter{ rainDrops.has(it) }.count()).equal(2000)
+                        expect(engine.entities.filter{ rainDrops.has(it) }.count()).equal(400)
                     }
 
                     it("spawns entities with `RainDrop` when 0.1s has passed with multiple updates") {
                         for (i in 1..15) {
                             engine.update(1f)
                         }
-                        expect(engine.entities.filter{ rainDrops.has(it) }.count()).equal(2000)
+                        expect(engine.entities.filter{ rainDrops.has(it) }.count()).equal(400)
                     }
                 }
 
