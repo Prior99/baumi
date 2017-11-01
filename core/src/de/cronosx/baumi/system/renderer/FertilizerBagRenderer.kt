@@ -15,9 +15,9 @@ class FertilizerBagRenderer(val batch: Batch, engine: Engine) : RenderSubSystem(
     val positions = mapperFor<Position>()
 
     val bagTexture = Texture("fertilizer.png")
-    val textureHeight = 18
-    val textureWidth = 56
-    val frames = 6
+    val textureHeight = 51
+    val textureWidth = 195
+    val frames = 5
 
     fun processEntity(entity: Entity, delta: Float) {
         val position = positions.get(entity).position

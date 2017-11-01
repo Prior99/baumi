@@ -30,10 +30,14 @@ class World (
     }
 }
 
-var world = World(
-    tick = 0,
-    lastTick = System.currentTimeMillis().toDouble() / 1000.0,
-    windDirection = Math.random().toFloat() * 20f - 10f,
-    id = UUID.randomUUID().toString(),
-    name = "Default tree"
-)
+fun createDefaultWorld(): World {
+    return World(
+        tick = 0,
+        lastTick = System.currentTimeMillis().toDouble() / 1000.0,
+        windDirection = Math.random().toFloat() * 20f - 10f,
+        id = UUID.randomUUID().toString(),
+        name = "Default tree"
+    )
+}
+
+var world = createDefaultWorld()

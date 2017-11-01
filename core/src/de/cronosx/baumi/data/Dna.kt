@@ -141,7 +141,7 @@ val defaultDna = DNA(
     ),
     leafs = GeneLeafs(
         maxGenerationLeafCountPerLength = 0.5f,
-        leafCountFalloff = 0.2f,
+        leafCountFalloff = 0.05f,
         maxRotationOffset = 0.2f,
         upkeep = 0.1f,
         leafCost = 5f,
@@ -169,10 +169,10 @@ val defaultDna = DNA(
     branching = GeneBranching(
         maxDepth = 4,
         minLength = 0.3f,
-        tripleProbability = 0.6f,
+        tripleProbability = 0.8f,
         branchCost = 8f,
         rotationSpacing = 0.2f,
-        rotationVariety = 0.2f
+        rotationVariety = 0.05f
     ),
     fruits = GeneFruits(
         maxValue = 100,

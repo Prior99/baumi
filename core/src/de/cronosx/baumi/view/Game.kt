@@ -71,7 +71,7 @@ class Game (val stage: Stage, val batch: Batch, val application: Application) : 
 
         override fun keyDown(keycode: Int): Boolean {
             if (keycode == Keys.BACK || keycode == Keys.ESCAPE) {
-                serializationSystem.save()
+                serializationSystem.save(true)
                 application.setScreen<TreesMenu>()
             }
             return false
@@ -144,6 +144,7 @@ class Game (val stage: Stage, val batch: Batch, val application: Application) : 
     }
 
     fun newGame() {
+        world = createDefaultWorld()
         // Create the root tree branch.
         engine.entity {
             with<Position> {
